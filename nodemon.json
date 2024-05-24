@@ -1,0 +1,5 @@
+{
+  "watch": ["mock-backend"],
+  "ignore": ["mock-backend/uploads/"],
+  "ext": "js"
+}
