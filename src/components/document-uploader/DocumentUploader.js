@@ -1,76 +1,103 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import FileUploader from 'devextreme-react/file-uploader';
 import ProgressBar from 'devextreme-react/progress-bar';
-import * as events from 'devextreme/events';
-import "./DocumentUploader.css"
+import notify from 'devextreme/ui/notify';
+import "./DocumentUploader.css";
 import {useAuth} from "../../contexts/auth";
-import {useCategories} from "../../app-hooks";
 
-//const allowedFileExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.bmp', '.doc', '.docx', '.xls', '.xlsx', '.pdf', '.txt'];
+import imageIcon from "./../../images/image_icon.png";
+import pdfIcon from "./../../images/pdf_icon.png";
+import docxIcon from "./../../images/docx_icon.png";
+import xlsxIcon from "./../../images/xlsx_icon.png";
+import txtIcon from "./../../images/txt_icon.png";
+import audioIcon from "./../../images/mp3_icon.png";
+import zipIcon from "./../../images/zip_icon.png";
+import documentIcon from "./../../images/document_icon.png";
+
 const DocumentUploader = React.memo(function DocumentUploader({dropZoneWidth = 350}) {
     const [isDropZoneActive, setIsDropZoneActive] = useState(false);
     const [imageSource, setImageSource] = useState('');
     const [textVisible, setTextVisible] = useState(true);
     const [progressVisible, setProgressVisible] = useState(false);
     const [progressValue, setProgressValue] = useState(0);
-    const {user} = useAuth()
-    const docTitle = "Document Title"
-    const docCategories = ["Category 1", "Category 2"]
-    // eslint-disable-next-line no-undef
-    const {categories} = useCategories()
+    const {user} = useAuth();
+    const docCategories = ["Category 1", "Category 2"];
+    const [title] = useState('');
 
 
     const onDropZoneEnter = useCallback((e) => {
-        if (e.dropZoneElement.id === 'dropzone-external') {
+        if (e.dropZoneElement && e.dropZoneElement.id === 'dropzone-external') {
             setIsDropZoneActive(true);
         }
-    }, [setIsDropZoneActive]);
+    }, []);
 
     const onDropZoneLeave = useCallback((e) => {
-        if (e.dropZoneElement.id === 'dropzone-external') {
+        if (e.dropZoneElement && e.dropZoneElement.id === 'dropzone-external') {
             setIsDropZoneActive(false);
         }
-    }, [setIsDropZoneActive]);
-
+    }, []);
 
     const onDropZoneClick = useCallback((e) => {
         e.stopPropagation();
     }, []);
 
-    const onUploaded = useCallback((e) => {
-        const {file} = e;
+    const onProgress = useCallback((e) => {
+        setProgressValue((e.bytesLoaded / e.bytesTotal) * 100);
+    }, []);
+
+    const handleFileLoad = useCallback((file) => {
         const fileReader = new FileReader();
         fileReader.onload = () => {
-            setIsDropZoneActive(false);
-            setImageSource(fileReader.result);
+            const fileType = file.type.split('/')[0];
+            const fileNameParts = file.name.split('.');
+            const fileExtension = fileNameParts.length > 1 ? fileNameParts.pop().toLowerCase() : '';
+
+            const iconMapping = {
+                image: imageIcon,
+                pdf: pdfIcon,
+                docx: docxIcon,
+                xlsx: xlsxIcon,
+                txt: txtIcon,
+                mp3: audioIcon,
+                zip: zipIcon,
+                rar: zipIcon,
+                '7z': zipIcon
+            };
+
+            const fileTypeIcon = iconMapping[fileExtension] || documentIcon;
+            setImageSource(fileType === 'image' ? fileReader.result : fileTypeIcon);
+        };
+        fileReader.onerror = () => {
+            notify({
+                message: "Failed to read the file.",
+                position: {at: 'center', my: 'center'}
+            }, "error", 5000);
         };
         fileReader.readAsDataURL(file);
         setTextVisible(false);
         setProgressVisible(false);
         setProgressValue(0);
-    }, [setImageSource, setIsDropZoneActive, setTextVisible, setProgressVisible, setProgressValue]);
+    }, []);
 
-    const onProgress = useCallback((e) => {
-        setProgressValue((e.bytesLoaded / e.bytesTotal) * 100);
-    }, [setProgressValue]);
-
-    const onUploadStarted = useCallback(() => {
-        setImageSource('');
-        setProgressVisible(true);
-    }, [setImageSource, setProgressVisible]);
-
-    useEffect(() => {
-        const fileUploaderButton = document.querySelector('.dx-fileuploader-button');
-        if (fileUploaderButton) {
-            events.on(fileUploaderButton, 'dxclick', onDropZoneClick);
+    const handleFileUpload = useCallback((e) => {
+        const {value} = e;
+        if (value === null || value.length === 0) {
+            // reset the img source, since the user has removed the file
+            setImageSource('');
+            setTextVisible(true);
+            setIsDropZoneActive(false);
+            return;
         }
-    }, [onDropZoneClick]);
+        if (value && value.length > 0) {
+            handleFileLoad(value[0]);
+        }
+    }, [handleFileLoad]);
 
     return (
         <div className="widget-container flex-box">
-            <div id="dropzone-external" style={{width: dropZoneWidth}} onClick={onDropZoneClick}
-                 className={`flex-box ${isDropZoneActive ?
-                     'dx-theme-accent-as-border-color dropzone-active' : 'dx-theme-border-color'}`}>
+            <div id="dropzone-external" style={{width: dropZoneWidth}}
+                 className={`flex-box ${isDropZoneActive ? 'dx-theme-accent-as-border-color dropzone-active' : 'dx-theme-border-color'}`}
+                 onClick={onDropZoneClick}>
                 {imageSource && <img id="dropzone-image" src={imageSource} alt=""/>}
                 {textVisible && (
                     <div id="dropzone-text" className="flex-box">
@@ -93,20 +120,16 @@ const DocumentUploader = React.memo(function DocumentUploader({dropZoneWidth = 3
                 dialogTrigger="#dropzone-external"
                 dropZone="#dropzone-external"
                 multiple={false}
-                // allowedFileExtensions={allowedFileExtensions}
-                uploadMode="instantly"
-                uploadUrl={`${process.env.REACT_APP_API_URL}/upload?userId=${user.id}&title=${docTitle}
-                &categories=${docCategories.join(',')}`}
+                uploadMode="useButtons"
+                uploadUrl={`${process.env.REACT_APP_API_URL}/upload?userId=${user.id}&title=${title}&categories=${docCategories.join(',')}`}
                 name={'file'}
-                // visible={false}
                 onDropZoneEnter={onDropZoneEnter}
                 onDropZoneLeave={onDropZoneLeave}
-                onUploaded={onUploaded}
                 onProgress={onProgress}
-                onUploadStarted={onUploadStarted}
+                onValueChanged={handleFileUpload}
             ></FileUploader>
         </div>
     );
-})
+});
 
 export default DocumentUploader;

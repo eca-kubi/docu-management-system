@@ -49,8 +49,8 @@ export const navigation = [
                 keyFn: () => 'logout'
             }
         ]
-    },
-    {
+    }
+    /*{
         compactModeOnly: false,
         expandedModeOnly: true,
         id: 'upload-document',
@@ -63,6 +63,6 @@ export const navigation = [
         id: 'upload-document-button',
         key: 'upload-document-button',
         icon: 'upload',
-    }
+    }*/
 ];
 

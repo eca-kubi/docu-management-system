@@ -1,8 +1,8 @@
 import Drawer from 'devextreme-react/drawer';
 import ScrollView from 'devextreme-react/scroll-view';
-import React, {useState, useCallback, useRef} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useNavigate} from 'react-router';
-import {Header, SideNavigationMenu, Footer} from '../../components';
+import {Footer, Header, SideNavigationMenu} from '../../components';
 import './side-nav-outer-toolbar.scss';
 import {useScreenSize} from '../../utils/media-query';
 import {Template} from 'devextreme-react/core/template';
@@ -64,7 +64,7 @@ export default function SideNavOuterToolbar({title, children}) {
     }, [navigate, menuStatus, isLarge]);
 
     const handleOnOptionChanged = useCallback(() => {
-        if(treeViewRef && treeViewRef.current){
+        if (treeViewRef && treeViewRef.current) {
             console.log('TreeView Repainted from Drawer')
 
             // Select the selectedItem after the TreeView is repainted
@@ -76,10 +76,10 @@ export default function SideNavOuterToolbar({title, children}) {
         }
     }, [treeViewRef, selectedItem])
 
-/*    const getTreeViewRef = useCallback((treeViewRef)=>{
-        setTreeViewRef(treeViewRef)
-        console.log('TreeView Ref set')
-    },[])*/
+    /*    const getTreeViewRef = useCallback((treeViewRef)=>{
+            setTreeViewRef(treeViewRef)
+            console.log('TreeView Ref set')
+        },[])*/
 
     return (
         <div className={'side-nav-outer-toolbar'}>

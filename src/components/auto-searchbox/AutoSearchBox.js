@@ -63,7 +63,8 @@ const AutoSearchBox = ({
         //const results = value ? generateFakeData(value) : generateFakeData('a')
         const results = [];
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/search?user_id=${user.id}&title=${value}`)
+            const response =
+                await fetch(`${process.env.REACT_APP_API_URL}/search?user_id=${user.id}&title=${value}`)
             if (response.ok) {
                 const data = await response.json();
                 onSearchResults(data);

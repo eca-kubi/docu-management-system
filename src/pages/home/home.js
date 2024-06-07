@@ -23,7 +23,7 @@ export default function Home() {
             <ul className="list-unstyled">
                 <li>
                     <FontAwesomeIcon icon={faCheckCircle} className={"me-2 text-success"}/>
-                    Secure file storage and retrieval
+                    Streamline storage by avoiding storing duplicate files
                 </li>
                 <li>
                     <FontAwesomeIcon icon={faCheckCircle} className={"me-2 text-success"}/>
@@ -31,7 +31,7 @@ export default function Home() {
                 </li>
                 <li>
                     <FontAwesomeIcon icon={faCheckCircle} className={"me-2 text-success"}/>
-                    Streamline storage by avoiding storing duplicate files
+                    Secure file storage and retrieval
                 </li>
             </ul>
             <Link to="/documents">

@@ -42,3 +42,26 @@
     justify-content: center;
     align-items: center;
 }
+
+/*#file-uploader div {
+    color: floralwhite;
+}*/
+
+#file-uploader.has-error .dx-fileuploader-file-status-message{
+    color: red;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#file-uploader input[type="file"] {
+    display: none;
+}
+
+#file-uploader .dx-fileuploader-upload-button {
+    display: none;
+}

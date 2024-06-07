@@ -5,17 +5,19 @@ import FileCardGrid from "../../components/card-grid/FileCardGrid"
 import {useAuth} from "../../contexts/auth";
 import {get, patch, post} from "../../utils/api";
 import notify from 'devextreme/ui/notify';
-import {Button, TagBox, TextBox} from "devextreme-react";
+import {Button, SpeedDialAction, TagBox, TextBox} from "devextreme-react";
 import LoadPanel from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
 import ArrayStore from "devextreme/data/array_store";
 import _, {isNull} from "lodash";
 import AutoSearchBox from "../../components/auto-searchbox/AutoSearchBox";
 import {useCategories} from "../../app-hooks";
+import UploadDocumentForm from "../../components/upload-document-form/UploadDocumentForm";
+import axios from "axios";
 
 const Documents = () => {
     const [documents, setDocuments] = useState([])
-    const [selectedDocIds, setSelectedDocIds] = useState([])
+    const [, setSelectedDocIds] = useState([])
     const [isLoadPanelVisible, setIsLoadPanelVisible] = useState(true)
     const [currentPage, setCurrentPage] = useState(0)
     const [pages, setPages] = useState([1])
@@ -26,13 +28,9 @@ const Documents = () => {
     const [selectedCategories, setSelectedCategories] = useState([])
     const [lastCategoryUpdateTime, setLastCategoryUpdateTime] = useState(new Date())
     const [searchResults, setSearchResults] = useState([])
-    const {mutate: mutateCategories, categories, isLoading, error}
-        = useCategories()
+    const {mutate: mutateCategories, categories} = useCategories()
     const [allCategories, setAllCategories] = useState([])
-
-    useEffect(() => {
-        setAllCategories(categories)
-    }, [categories])
+    const [isPopupVisible, setIsPopupVisible] = useState(false)
 
     const handleCategoryUpdate = useCallback(async (docId, category) => {
         //const categories = [...new Set([...category, ...allCategories])]
@@ -53,22 +51,22 @@ const Documents = () => {
                     }
                 });
             // Optimistically update the cache
-           // await mutateCategories(newCategories);
+            // await mutateCategories(newCategories);
             await mutateCategories(async (currentCategories) => {
                 return [...new Set([...category, ...currentCategories])];
             });
 
-             post(`${process.env.REACT_APP_API_URL}/categories`, {categories: category})
-                 .then( async (response) => {
-                     if (response.isOk) {
-                         console.log('Categories updated successfully.')
-                         //notify('Categories updated successfully.', 'success', 3000)
-                         await mutateCategories(response.data);
-                     } else {
-                         console.log('Failed to update categories.')
-                         notify('Failed to update categories.', 'error', 3000)
-                     }
-                 });
+            post(`${process.env.REACT_APP_API_URL}/categories`, {categories: category})
+                .then(async (response) => {
+                    if (response.isOk) {
+                        console.log('Categories updated successfully.')
+                        //notify('Categories updated successfully.', 'success', 3000)
+                        await mutateCategories(response.data);
+                    } else {
+                        console.log('Failed to update categories.')
+                        notify('Failed to update categories.', 'error', 3000)
+                    }
+                });
         } catch (e) {
             console.log('Failed to update document category.', e)
             notify('Failed to update document category.', 'error', 3000)
@@ -201,27 +199,48 @@ const Documents = () => {
             }
         };
 
-        fetchUpdatedDocuments();
+        fetchUpdatedDocuments().then(() => console.log('Updated documents fetched successfully.'));
     }, [lastCategoryUpdateTime, user.id]);
 
-    /*    useEffect(() => {
-            (async () => {
-                // Get all categories
-                try {
-                    const response = await get(`${process.env.REACT_APP_API_URL}/categories`)
-                    if (response.isOk) {
-                        const uniqueCategories = [...(new Set(response.data))]
-                        setAllCategories(uniqueCategories)
-                    } else {
-                        console.log('Failed to fetch categories from server.')
-                        // show notification using devextreme toaster
-                        notify('Failed to fetch categories from server.', 'error', 3000)
-                    }
-                } catch (e) {
-                    console.log('Failed to fetch categories from server.', e)
-                }
-            })();
-        }, []);*/
+
+    useEffect(() => {
+        setAllCategories(categories)
+    }, [categories])
+
+
+    const handleFormSubmit = useCallback((e) => {
+        console.log('Handle submit: ', e)
+    }, []);
+
+    const handleFieldChange = useCallback((e) => {
+        if (e.dataField === 'title') {
+
+        }
+        if (e.dataField === 'categories') {
+            const newCategories = e.value.filter(category => !categories.includes(category));
+
+            if (newCategories.length > 0) {
+                // Post new categories to the backend
+                axios.post(`${process.env.REACT_APP_API_URL}/categories`, { categories: newCategories })
+                    .then(response => {
+                        console.log('New categories posted:', response.data);
+                        // Update the categories using mutate
+                        mutateCategories([...categories, ...response.data]).then(r => console.log(r));
+                    })
+                    .catch(error => {
+                        console.error('Error posting new categories:', error);
+                    });
+            }
+        }
+    }, [categories, mutateCategories]);
+
+    const handlePopupShown = useCallback(() => {
+        setIsPopupVisible(true)
+    }, [])
+
+    const handlePopupHidden = useCallback(() => {
+        setIsPopupVisible(false)
+    }, [])
 
     return (
         <div className="p-3 shadow rounded bg-secondary-subtle">
@@ -238,7 +257,6 @@ const Documents = () => {
                     acceptCustomValue={true}
                     stylingMode={"filled"}
                     placeholder={'Filter by category'}
-                    //dataSource={[...new Set([...selectedCategories, ..._.sortBy(allCategories)])]}
                     dataSource={[...new Set([...selectedCategories, ..._.sortBy(allCategories)])]}
                     value={selectedCategories}
                     searchEnabled={true}
@@ -312,25 +330,28 @@ const Documents = () => {
             <div className='card-grid h-100' id="#cardGrid">
                 <FileCardGrid itemDatasource={itemDatasource}
                               allCategories={allCategories}
-                    //allCategories={allCategories}
                               onCategoryUpdate={handleCategoryUpdate}
                               onCardSelected={handleDocumentSelection}
                 />
             </div>
+
             {/*            <SpeedDialAction
                 hint={'Search documents'}
                 icon={'search'}
                 label={'Search'}
                 onClick={() => {
-
                 }}
-            />
+            />*/}
             <SpeedDialAction
                 hint={'Upload documents'}
                 icon={'upload'}
                 label={'Upload'}
+                onClick={() => {
+                    // show the upload document form
+                    setIsPopupVisible(true)
+                }}
             />
-            <SpeedDialAction
+            {/*<SpeedDialAction
                 hint={'Download documents'}
                 label={'Download'}
                 icon={'download'}
@@ -342,7 +363,17 @@ const Documents = () => {
                 label={'Delete'}
                 visible={selectedDocIds.length > 0}
             />*/}
+
             <LoadPanel container={'.card-grid'} visible={isLoadPanelVisible}/>
+
+            <UploadDocumentForm
+                isPopupVisible={isPopupVisible}
+                handleFieldChange={handleFieldChange}
+                handleFormSubmit={handleFormSubmit}
+                handlePopupShown={handlePopupShown}
+                handlePopupHidden={handlePopupHidden}
+            />
+
         </div>
     )
 }

@@ -6,6 +6,5 @@
   "makeSwatch": true,
   "base": true,
   "widgets": [
-    "treeview"
   ]
 }

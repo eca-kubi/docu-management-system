@@ -1,9 +1,6 @@
-import 'devextreme/dist/css/dx.common.css';
-import './themes/generated/theme.base.css';
-import './themes/generated/theme.additional.css';
+//import 'devextreme/dist/css/dx.common.css';
 import React, {useEffect} from 'react';
 import {HashRouter as Router} from 'react-router-dom';
-import './dx-styles.scss';
 import LoadPanel from 'devextreme-react/load-panel';
 import {NavigationProvider} from './contexts/navigation';
 import {AuthProvider, useAuth} from './contexts/auth';
@@ -12,6 +9,9 @@ import Content from './Content.js';
 import UnauthenticatedContent from './UnauthenticatedContent';
 import config from "devextreme/core/config";
 import ErrorBoundary from "./components/error-boundary/ErrorBoundary";
+import './themes/generated/theme.base.css';
+import './themes/generated/theme.additional.css';
+//import './dx-styles.scss';
 
 function App() {
     const {user, loading} = useAuth();

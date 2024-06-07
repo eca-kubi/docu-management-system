@@ -4,7 +4,7 @@ import {navigation} from '../../app-navigation';
 import {useNavigation} from '../../contexts/navigation';
 import {useScreenSize} from '../../utils/media-query';
 import './SideNavigationMenu.scss';
-import DocumentUploader from "../document-uploader/DocumentUploader";
+//import DocumentUploader from "../document-uploader/DocumentUploader";
 import * as events from 'devextreme/events';
 import _ from "lodash";
 
@@ -101,13 +101,13 @@ try {
 
     }, [compactMode]);
 
-    const renderDocumentUploader = useCallback(({dropZoneWidth}) => {
+/*    const renderDocumentUploader = useCallback(({dropZoneWidth}) => {
         return (
             <DocumentUploader
                 dropZoneWidth={dropZoneWidth}
             />
         );
-    }, []);
+    }, []);*/
 
     const handleOnItemClick = useCallback((e) => {
         selectedItemChanged(e);
@@ -144,7 +144,7 @@ try {
                 >
                     {
                         items.map((item) =>
-                            item.key !== 'upload-document' ?
+                           // item.key !== 'upload-document' ?
                                 (
                                     <Item keyFn={() => item.key}
                                         key={item.key}
@@ -155,14 +155,14 @@ try {
                                         items={item?.items}
                                         visible={toggleItemVisibility(item)}
                                     />
-                                ) : (
+                                ) /*: (
                                     <Item keyFn={() => item.key}
                                         key={item.key}
                                         id={item.key}
                                         component={() => renderDocumentUploader({dropZoneWidth: 250})}
                                         visible={toggleItemVisibility(item)}
                                     />
-                                )
+                                )*/
                         )
                     }
                 </TreeView>
