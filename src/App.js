@@ -45,9 +45,9 @@ function App() {
 
 export default function Root() {
     const screenSizeClass = useScreenSizeClass();
-    useEffect(() => {
+/*    useEffect(() => {
         console.clear()
-    }, []);
+    }, []);*/
     return (
         <ErrorBoundary>
             <Router>

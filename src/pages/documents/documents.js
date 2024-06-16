@@ -26,14 +26,13 @@ const Documents = () => {
     const tagRef = React.createRef()
     const {user} = useAuth()
     const [selectedCategories, setSelectedCategories] = useState([])
-    const [lastCategoryUpdateTime, setLastCategoryUpdateTime] = useState(new Date())
+    const [lastUpdateTime, setLastUpdateTime] = useState(new Date())
     const [searchResults, setSearchResults] = useState([])
     const {mutate: mutateCategories, categories} = useCategories()
     const [allCategories, setAllCategories] = useState([])
     const [isPopupVisible, setIsPopupVisible] = useState(false)
 
     const handleCategoryUpdate = useCallback(async (docId, category) => {
-        //const categories = [...new Set([...category, ...allCategories])]
         const newCategories = [...new Set([...category, ...categories])];
         setAllCategories(newCategories)
 
@@ -42,16 +41,13 @@ const Documents = () => {
                 .then((response) => {
                     if (response.isOk) {
                         console.log('Document category updated successfully.')
-                        //setAllCategories(categories)
-                        setLastCategoryUpdateTime(new Date())
-                        //notify('Document category updated successfully.', 'success', 3000)
+                        setLastUpdateTime(new Date())
                     } else {
                         console.log('Failed to update document category.')
                         notify('Failed to update document category.', 'error', 3000)
                     }
                 });
             // Optimistically update the cache
-            // await mutateCategories(newCategories);
             await mutateCategories(async (currentCategories) => {
                 return [...new Set([...category, ...currentCategories])];
             });
@@ -60,7 +56,6 @@ const Documents = () => {
                 .then(async (response) => {
                     if (response.isOk) {
                         console.log('Categories updated successfully.')
-                        //notify('Categories updated successfully.', 'success', 3000)
                         await mutateCategories(response.data);
                     } else {
                         console.log('Failed to update categories.')
@@ -157,9 +152,9 @@ const Documents = () => {
                     <span>{item.title}</span>
                     <div className="group-hover:block action-buttons hidden">
                         <div className="flex gap-2">
-                            <Button onClick={(e) => handleDownload(e, item.hashValue)} icon='download'>
+                            <Button onClick={(e) => handleDownload(e, item["hashValue"])} icon='download'>
                             </Button>
-                            <Button onClick={(e) => handleDelete(e, item.hashValue)} icon='trash'>
+                            <Button onClick={(e) => handleDelete(e, item["hashValue"])} icon='trash'>
                             </Button>
                         </div>
                     </div>
@@ -167,10 +162,6 @@ const Documents = () => {
             )
         }
     }), [handleDelete, handleDownload, listDataSource]);
-
-    useEffect(() => {
-        console.clear();
-    }, []);
 
     useEffect(() => {
         itemDatasource.filter(filterByCategories);
@@ -182,7 +173,7 @@ const Documents = () => {
         setPages([...Array(totalPages).keys()].map((i) => i + 1));
     }, [filterByCategories, itemDatasource, pageSize, selectedCategories, totalPages]);
 
-    // Fetch updated documents whenever lastCategoryUpdateTime changes
+    // Fetch updated documents whenever lastUpdateTime changes
     useEffect(() => {
         const fetchUpdatedDocuments = async () => {
             try {
@@ -200,7 +191,7 @@ const Documents = () => {
         };
 
         fetchUpdatedDocuments().then(() => console.log('Updated documents fetched successfully.'));
-    }, [lastCategoryUpdateTime, user.id]);
+    }, [lastUpdateTime, user.id]);
 
 
     useEffect(() => {
@@ -208,9 +199,55 @@ const Documents = () => {
     }, [categories])
 
 
-    const handleFormSubmit = useCallback((e) => {
-        console.log('Handle submit: ', e)
-    }, []);
+    const handleFormSubmit = useCallback(async (formData) => {
+        console.log('Handle submit: ', formData);
+
+        const file = formData.file[0];
+        const title = formData.title;
+        const categories = formData.categories;
+
+        // Create a FormData object to handle the file upload
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        uploadData.append('title', title.trim());
+        uploadData.append('categories', categories.join(','));
+        uploadData.append('userId', user.id);
+
+        try {
+            // Upload the file to the server
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/documents/upload`, uploadData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (response.status === 200) {
+                console.log('File uploaded successfully:', response.data);
+
+                // Update the documents state with the new document
+                setDocuments(prevDocuments => [...prevDocuments, response.data.document]);
+
+                // Close the popup
+                setIsPopupVisible(false);
+
+                // Show a success notification
+                notify('Document uploaded successfully.', 'success', 3000);
+            } else if (response.status === 400 && response.data.error === 'duplicate file') {
+                const { title, uploadDate, categories } = response.data["existing_document"];
+                const message = `A file with the same content already exists.\n\nTitle: ${title}\nUpload Date: ${uploadDate}\nCategories: ${categories.join(', ')}`;
+                console.log('Duplicate file:', message);
+                notify({ message, position: { at: 'center', my: 'center' }, width: 'auto' }, 'warning', 5000);
+            } else {
+                console.log('Failed to upload file:', response);
+                notify('Failed to upload document.', 'error', 3000);
+            }
+        } catch (error) {
+            console.log('Error uploading file:', error);
+            notify('Error uploading document.', 'error', 3000);
+        }
+    }, [user.id, setDocuments, setIsPopupVisible]);
+
+
 
     const handleFieldChange = useCallback((e) => {
         if (e.dataField === 'title') {
