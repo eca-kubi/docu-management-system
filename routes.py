@@ -7,9 +7,9 @@ from flask_cors import cross_origin
 from tinydb import Query
 from werkzeug.utils import secure_filename
 
-
 from helpers import compute_file_hash
 from library.python.Database import Database
+from library.python.Document import Document as TrieDocument
 
 db = Database().get_db()
 
@@ -40,7 +40,7 @@ def search():
     return documents_dict, 200
 
 
-@upload_file_bp.route('/upload', methods=['POST'])
+@upload_file_bp.route('/documents/upload', methods=['POST'])
 @cross_origin()  # This enables CORS for this specific route
 def upload_file():
     from app import app
@@ -48,11 +48,10 @@ def upload_file():
     if 'file' not in request.files:
         return {'message': 'No file part in the request'}, 400
 
-    user_id = request.args.get('userId')
-    user = db.table('users').get(doc_id=user_id)
+    user_id = request.form.get('userId')
     file = request.files['file']
-    title = request.args.get('title')
-    categories = request.args.get('categories')
+    title = request.form.get('title').strip()
+    categories = request.form.get('categories')
 
     if not title:
         return {'message': 'Title is required'}, 400
@@ -71,6 +70,12 @@ def upload_file():
             # Calculate the hash
             file_hash = compute_file_hash(file.stream)
 
+            # Get the user from the database
+            User = Query()
+            users_table = db.table('users')
+            user = users_table.get(User.id == user_id)
+            author = user['firstName'] + ' ' + user['lastName'] if user else 'Anonymous'
+
             # Check if a document with the same hash value already exists
             Document = Query()
             documents_table = db.table('documents')
@@ -79,37 +84,39 @@ def upload_file():
             if existing_document:
                 return {
                     'message': 'A file with the same content already exists',
+                    'error': 'duplicate file',
                     'existing_document': {
                         'title': existing_document['title'],
-                        'uploadDate': existing_document['uploadDate'],
+                        'uploadDate': existing_document['uploadDateReadable'],
                         'categories': existing_document['categories']
                     }
                 }, 400
             else:
                 # Create a new document
-                # Create a new document
                 new_document = {
                     'id': Database.generate_id(),
                     'userId': user_id,
-                    'author': user['firstName'] + ' ' + user['lastName'],
+                    'author': author,
                     'title': title,
                     'hashValue': file_hash,
                     'fileExt': file_extension,
                     'fileType': file_extension,
                     'uploadDate': datetime.now().isoformat(),
-                    'uploadDateReadable': datetime.now().strftime('%Y-%mm-%dd %H:%M:%S'),
+                    'uploadDateReadable': datetime.now().strftime('%d-%b-%Y %H:%M'),
                     'categories': categories.split(',')
                 }
                 documents_table.insert(new_document)
                 # insert the document into the trie
                 from app import trieUsersMap
                 trie_user = trieUsersMap.get(user_id)
-                trie_user.trie.insert(new_document)
+                document = TrieDocument(new_document['id'], new_document['title'], new_document['hashValue'],
+                                        new_document['fileExt'])
+                trie_user.trie.insert(document)
                 # Save the file
                 file_name = f"{new_document['hashValue']}{new_document['fileExt']}"
                 # Reset the file stream position again before saving
                 file.stream.seek(0)  # Move the stream pointer back to the beginning
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_name))  # Save with new file name
-                return {'message': 'File successfully uploaded', 'hash': file_hash}, 200
+                return {'message': 'File successfully uploaded', 'document': new_document}, 200
     except Exception as e:
         return {'message': str(e)}, 500

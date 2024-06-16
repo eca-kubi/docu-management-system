@@ -31,7 +31,6 @@ CORS(app)
 
 api = Api(app)
 api.add_resource(Categories, '/categories')
-
 api.add_resource(Users, '/users')
 api.add_resource(User, '/users/<string:user_id>')
 api.add_resource(Documents, '/documents')
@@ -44,7 +43,7 @@ app.register_blueprint(upload_file_bp)
 
 @app.route('/')
 def hello_world():  # put application's code here
-    temp = "Hello World!"
+    temp = "Hello DMS Backend!"
     return temp
 
 

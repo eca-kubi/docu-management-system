@@ -3,31 +3,34 @@
         "1": {
             "id": "1",
             "data": [
-                "Rejected",
-                "Pending",
-                "Final",
-                "Review",
-                "Health",
-                "School",
-                "Monthly Report",
                 "Finance",
+                "School",
                 "Urgent",
-                "Personal",
-                "Pending Approval",
-                "Feedback Received",
                 "Important",
-                "Work",
-                "Miscellaneous",
-                "Archive",
-                "Confidential",
                 "Pending Review",
-                "Completed",
+                "Draft",
+                "Rejected",
+                "Personal",
                 "In Progress",
+                "Pending Approval",
+                "Health",
+                "Legal",
+                "Political",
+                "Pending",
+                "Feedback Received",
+                "Monthly Report",
+                "Completed",
+                "Stationary",
+                "Miscellaneous",
+                "Culture",
+                "Approved",
                 "Daily Report",
                 "Weekly Report",
-                "Approved",
-                "Draft",
-                "Legal"
+                "Confidential",
+                "Work",
+                "Final",
+                "Archive",
+                "Review"
             ]
         }
     },
@@ -64,6 +67,23 @@
             "bio": "blogger",
             "position": "Senior Identity Consultant",
             "prefix": "Ms."
+        }
+    },
+    "documents": {
+        "1": {
+            "id": "3bfb5d20-6d21-457e-b354-b9614327b3f2",
+            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "author": "Connor Stroman",
+            "title": "Doc Title",
+            "hashValue": "10fc84e92c8d0b0403c0f1c7dc50919917132cb94548cab4ce3c137f377f660d",
+            "fileExt": ".png",
+            "fileType": ".png",
+            "uploadDate": "2024-06-13T02:47:36.262227",
+            "uploadDateReadable": "13-Jun-2024 02:47",
+            "categories": [
+                "Draft",
+                "Feedback Received"
+            ]
         }
     }
 }
