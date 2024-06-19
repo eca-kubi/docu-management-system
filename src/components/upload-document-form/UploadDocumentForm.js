@@ -27,6 +27,7 @@ const UploadDocumentForm = ({
 
     const [sortedCategories, setSortedCategories] = useState([]);
     const [isUploaderReady, setUploaderReady] = useState(false);
+    const timeoutRef = useRef(null);
 
     useEffect(() => {
         if (categories) {
@@ -39,23 +40,21 @@ const UploadDocumentForm = ({
     }, [categories, isPopupVisible]);
 
     const scrollToValidationSummary = useCallback(() => {
-        setTimeout(() => {
-            if (scrollViewRef.current) {
-                const validationSummaryElement = document.getElementsByClassName('dx-validationsummary')[0];
-                if (validationSummaryElement) {
-                    console.log('Scrolling to validation summary', validationSummaryElement);
-                    scrollViewRef.current.instance.scrollToElement(validationSummaryElement);
-                } else {
-                    console.log('Validation summary element not found');
-                }
+        if (scrollViewRef.current) {
+            const validationSummaryElement = document.getElementsByClassName('dx-validationsummary')[0];
+            if (validationSummaryElement) {
+                console.log('Scrolling to validation summary', validationSummaryElement);
+                scrollViewRef.current.instance.scrollToElement(validationSummaryElement);
             } else {
-                console.log('ScrollView ref not found');
+                console.log('Validation summary element not found');
             }
-        }, 1500); // Increased timeout to ensure the validation summary is rendered
+        } else {
+            console.log('ScrollView ref not found');
+        }
     }, []);
 
     const handleValidated = useCallback(async (e) => {
-        if (e.isValid) {
+        if (e.isValid && e.status === 'valid') {
             await handleFormSubmit(formData);
         } else {
             console.log("Broken rules:", e.brokenRules);
@@ -69,14 +68,12 @@ const UploadDocumentForm = ({
     }, [handleValidated]);
 
     const attachValidatedEvent = useCallback(() => {
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
             const group = validationEngine.getGroupConfig('uploadDocumentGroup');
-            if (group) {
-                if (handleValidatedRef.current) {
-                    group.on('validated', handleValidatedRef.current);
-                }
+            if (group && handleValidatedRef.current) {
+                group.on('validated', handleValidatedRef.current);
             }
-        }, 750); // Ensure the validation group is fully initialized
+        }, 1500); // Ensure the validation group is fully initialized
     }, []);
 
     const detachValidatedEvent = useCallback(() => {
@@ -94,6 +91,7 @@ const UploadDocumentForm = ({
         }
 
         return () => {
+            clearTimeout(timeoutRef.current);
             detachValidatedEvent();
         };
     }, [isPopupVisible, attachValidatedEvent, detachValidatedEvent]);
@@ -104,7 +102,7 @@ const UploadDocumentForm = ({
 
     const onPopupShown = useCallback(() => {
         setUploaderReady(true);
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
             if (formRef.current) {
                 const titleEditor = formRef.current.getEditor('title');
                 if (titleEditor) {
@@ -176,6 +174,19 @@ const UploadDocumentForm = ({
         console.log("Validation Item Clicked");
     }, []);
 
+    const onPopupHidden = useCallback(() => {
+        // Reset form data
+        setFormData({ title: '', categories: [], file: [] });
+
+        // Detach handleValidated function from validation group
+        const group = validationEngine.getGroupConfig('uploadDocumentGroup');
+        if (group && handleValidatedRef.current) {
+            group.off('validated', handleValidatedRef.current);
+        }
+
+        handlePopupHidden();
+    }, [handlePopupHidden]);
+
     return (
         <Popup
             visible={isPopupVisible}
@@ -186,7 +197,7 @@ const UploadDocumentForm = ({
             height={600}
             ref={popupRef}
             onShown={onPopupShown}
-            onHidden={handlePopupHidden}
+            onHidden={onPopupHidden}
         >
             <ScrollView width="100%" height="100%" ref={scrollViewRef}>
                 <Form
