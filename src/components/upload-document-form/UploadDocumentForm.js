@@ -23,7 +23,6 @@ const UploadDocumentForm = ({
     const formRef = useRef(null);
     const validationSummaryRef = useRef(null);
     const scrollViewRef = useRef(null);
-    const handleValidatedRef = useRef(null);
 
     const [sortedCategories, setSortedCategories] = useState([]);
     const [isUploaderReady, setUploaderReady] = useState(false);
@@ -43,58 +42,39 @@ const UploadDocumentForm = ({
         if (scrollViewRef.current) {
             const validationSummaryElement = document.getElementsByClassName('dx-validationsummary')[0];
             if (validationSummaryElement) {
-                console.log('Scrolling to validation summary', validationSummaryElement);
                 scrollViewRef.current.instance.scrollToElement(validationSummaryElement);
-            } else {
-                console.log('Validation summary element not found');
             }
-        } else {
-            console.log('ScrollView ref not found');
         }
     }, []);
 
     const handleValidated = useCallback(async (e) => {
-        if (e.isValid && e.status === 'valid') {
+        if (!e.brokenRules.length) { // Check if there are any broken rules
             await handleFormSubmit(formData);
         } else {
-            console.log("Broken rules:", e.brokenRules);
             scrollToValidationSummary();
         }
     }, [formData, handleFormSubmit, scrollToValidationSummary]);
 
-    // Store the current handleValidated reference in a ref
     useEffect(() => {
-        handleValidatedRef.current = handleValidated;
-    }, [handleValidated]);
-
-    const attachValidatedEvent = useCallback(() => {
-        timeoutRef.current = setTimeout(() => {
+        const attachValidatedEvent = () => {
             const group = validationEngine.getGroupConfig('uploadDocumentGroup');
-            if (group && handleValidatedRef.current) {
-                group.on('validated', handleValidatedRef.current);
+            if (group) {
+                group.on('validated', handleValidated);
             }
-        }, 1500); // Ensure the validation group is fully initialized
-    }, []);
+        };
 
-    const detachValidatedEvent = useCallback(() => {
-        const group = validationEngine.getGroupConfig('uploadDocumentGroup');
-        if (group && handleValidatedRef.current) {
-            group.off('validated', handleValidatedRef.current);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (isPopupVisible) {
-            attachValidatedEvent();
-        } else {
-            detachValidatedEvent();
+        if (isPopupVisible && formRef.current) {
+            attachValidatedEvent(); // Attach only when the popup is visible and the form is ready
         }
 
         return () => {
-            clearTimeout(timeoutRef.current);
-            detachValidatedEvent();
+            const group = validationEngine.getGroupConfig('uploadDocumentGroup');
+            if (group) {
+                group.off('validated', handleValidated);
+            }
         };
-    }, [isPopupVisible, attachValidatedEvent, detachValidatedEvent]);
+    }, [isPopupVisible, handleValidated]); // Add handleValidated to dependency array
+
 
     const onFormInitialized = useCallback((e) => {
         formRef.current = e.component;
@@ -109,7 +89,7 @@ const UploadDocumentForm = ({
                     titleEditor.focus();
                 }
             }
-        }, 500); // Ensure the popup is fully shown before focusing
+        }, 500);
         handlePopupShown();
     }, [handlePopupShown]);
 
@@ -175,15 +155,7 @@ const UploadDocumentForm = ({
     }, []);
 
     const onPopupHidden = useCallback(() => {
-        // Reset form data
         setFormData({ title: '', categories: [], file: [] });
-
-        // Detach handleValidated function from validation group
-        const group = validationEngine.getGroupConfig('uploadDocumentGroup');
-        if (group && handleValidatedRef.current) {
-            group.off('validated', handleValidatedRef.current);
-        }
-
         handlePopupHidden();
     }, [handlePopupHidden]);
 
@@ -230,7 +202,6 @@ const UploadDocumentForm = ({
                             type={"async"}
                             ignoreEmptyValue={true}
                             validationCallback={async (params) => {
-                                console.log("Validating title asynchronously:", params.value);
                                 if (params.value) {
                                     const exists = await titleExists(params.value);
                                     return !exists;
@@ -246,7 +217,9 @@ const UploadDocumentForm = ({
                         editorType="dxTagBox"
                         editorOptions={categoriesEditorOptions}
                         label={{ visible: false }}
-                    />
+                    >
+                        <RequiredRule message="At least one category is required" />
+                    </SimpleItem>
                     <SimpleItem
                         name={"file"}
                         dataField={"file"}
