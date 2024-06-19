@@ -1,10 +1,11 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Popup, ScrollView} from "devextreme-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Popup, ScrollView } from "devextreme-react";
 import ValidationSummary from 'devextreme-react/validation-summary';
-import Form, {AsyncRule, ButtonItem, GroupItem, RequiredRule, SimpleItem} from "devextreme-react/form";
-import {Validator} from 'devextreme-react/validator';
-import {useCategories} from "../../app-hooks";
-import {useAuth} from "../../contexts/auth";
+import Form, { AsyncRule, ButtonItem, GroupItem, RequiredRule, SimpleItem } from "devextreme-react/form";
+import { Validator } from 'devextreme-react/validator';
+import validationEngine from 'devextreme/ui/validation_engine';
+import { useCategories } from "../../app-hooks";
+import { useAuth } from "../../contexts/auth";
 import DocumentUploader from "../document-uploader/DocumentUploader";
 
 const UploadDocumentForm = ({
@@ -14,14 +15,15 @@ const UploadDocumentForm = ({
                                 handlePopupShown,
                                 handlePopupHidden
                             }) => {
-    const {user} = useAuth();
-    const [formData, setFormData] = useState({title: '', categories: [], file: []});
-    const {categories} = useCategories();
+    const { user } = useAuth();
+    const [formData, setFormData] = useState({ title: '', categories: [], file: [] });
+    const { categories } = useCategories();
 
     const popupRef = useRef(null);
     const formRef = useRef(null);
     const validationSummaryRef = useRef(null);
     const scrollViewRef = useRef(null);
+    const handleValidatedRef = useRef(null);
 
     const [sortedCategories, setSortedCategories] = useState([]);
     const [isUploaderReady, setUploaderReady] = useState(false);
@@ -32,9 +34,69 @@ const UploadDocumentForm = ({
             setSortedCategories(sorted);
         }
         if (isPopupVisible) {
-            setFormData({file: [], title: '', categories: []});
+            setFormData({ file: [], title: '', categories: [] });
         }
     }, [categories, isPopupVisible]);
+
+    const scrollToValidationSummary = useCallback(() => {
+        setTimeout(() => {
+            if (scrollViewRef.current) {
+                const validationSummaryElement = document.getElementsByClassName('dx-validationsummary')[0];
+                if (validationSummaryElement) {
+                    console.log('Scrolling to validation summary', validationSummaryElement);
+                    scrollViewRef.current.instance.scrollToElement(validationSummaryElement);
+                } else {
+                    console.log('Validation summary element not found');
+                }
+            } else {
+                console.log('ScrollView ref not found');
+            }
+        }, 1500); // Increased timeout to ensure the validation summary is rendered
+    }, []);
+
+    const handleValidated = useCallback(async (e) => {
+        if (e.isValid) {
+            await handleFormSubmit(formData);
+        } else {
+            console.log("Broken rules:", e.brokenRules);
+            scrollToValidationSummary();
+        }
+    }, [formData, handleFormSubmit, scrollToValidationSummary]);
+
+    // Store the current handleValidated reference in a ref
+    useEffect(() => {
+        handleValidatedRef.current = handleValidated;
+    }, [handleValidated]);
+
+    const attachValidatedEvent = useCallback(() => {
+        setTimeout(() => {
+            const group = validationEngine.getGroupConfig('uploadDocumentGroup');
+            if (group) {
+                if (handleValidatedRef.current) {
+                    group.on('validated', handleValidatedRef.current);
+                }
+            }
+        }, 750); // Ensure the validation group is fully initialized
+    }, []);
+
+    const detachValidatedEvent = useCallback(() => {
+        const group = validationEngine.getGroupConfig('uploadDocumentGroup');
+        if (group && handleValidatedRef.current) {
+            group.off('validated', handleValidatedRef.current);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isPopupVisible) {
+            attachValidatedEvent();
+        } else {
+            detachValidatedEvent();
+        }
+
+        return () => {
+            detachValidatedEvent();
+        };
+    }, [isPopupVisible, attachValidatedEvent, detachValidatedEvent]);
 
     const onFormInitialized = useCallback((e) => {
         formRef.current = e.component;
@@ -42,17 +104,26 @@ const UploadDocumentForm = ({
 
     const onPopupShown = useCallback(() => {
         setUploaderReady(true);
-        if (formRef.current) {
-            const titleEditor = formRef.current.getEditor('title');
-            titleEditor.element().querySelector('input').focus();
-        }
+        setTimeout(() => {
+            if (formRef.current) {
+                const titleEditor = formRef.current.getEditor('title');
+                if (titleEditor) {
+                    titleEditor.focus();
+                }
+            }
+        }, 500); // Ensure the popup is fully shown before focusing
         handlePopupShown();
     }, [handlePopupShown]);
 
     const titleExists = useCallback(async (title) => {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/search?title=${title}&user_id=${user.id}`);
-        const results = await response.json();
-        return results.length > 0;
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/validate_title?title=${title}&user_id=${user.id}`);
+            const results = await response.json();
+            return results.exists;
+        } catch (error) {
+            console.error("Error validating title:", error);
+            return false;
+        }
     }, [user.id]);
 
     const onFieldDataChanged = useCallback((e) => {
@@ -60,26 +131,17 @@ const UploadDocumentForm = ({
     }, [handleFieldChange]);
 
     const handleFileChange = useCallback((value) => {
-        setFormData(prevState => ({...prevState, file: value || []}));
-        onFieldDataChanged({dataField: 'file', value: value || []});
+        setFormData(prevState => ({ ...prevState, file: value || [] }));
+        onFieldDataChanged({ dataField: 'file', value: value || [] });
     }, [onFieldDataChanged]);
 
-    const handleSubmit = useCallback((e) => {
-        e.preventDefault();
-        handleFormSubmit(formData);
-    }, [handleFormSubmit, formData]);
-
-    const scrollToValidationSummary = useCallback(() => {
-        if (scrollViewRef.current && validationSummaryRef.current) {
-            setTimeout(() => {
-                scrollViewRef.current.instance.scrollToElement(document.getElementsByClassName('dx-validationsummary')[0]);
-            }, 1000);
-        }
+    const handleValidationAndSubmit = useCallback(async () => {
+        await validationEngine.validateGroup('uploadDocumentGroup');
     }, []);
 
     const titleEditorOptions = useMemo(() => ({
         labelMode: 'floating',
-        label: 'Categories',
+        label: 'Title',
         stylingMode: 'underlined',
         placeholder: ''
     }), []);
@@ -97,26 +159,21 @@ const UploadDocumentForm = ({
         applyValueMode: 'instantly',
         maxDisplayedTags: 5,
         showMultiTagOnly: false,
-        dropDownOptions: {hideOnOutsideClick: true},
+        dropDownOptions: { hideOnOutsideClick: true },
         searchEnabled: true
     }), [sortedCategories]);
 
     const submitButtonOptions = useMemo(() => ({
         text: "Submit",
         type: "success",
-        useSubmitBehavior: true,
+        onClick: handleValidationAndSubmit,
         validationGroup: "uploadDocumentGroup",
-    }), []);
+    }), [handleValidationAndSubmit]);
 
-    const handleValidated = useCallback((e)=> {
-        if(!e.isValid) scrollToValidationSummary();
-    }, [scrollToValidationSummary])
+    const validationSummaryAttr = useMemo(() => ({ id: 'validationSummary' }), []);
 
-    const validationSummaryAttr = useMemo(() => ({id: 'validationSummary'}), []);
-
-    const handleValidationSummaryItemClick = useCallback((e) => {
-        const elem = e.element;
-
+    const handleValidationSummaryItemClick = useCallback(() => {
+        console.log("Validation Item Clicked");
     }, []);
 
     return (
@@ -132,102 +189,100 @@ const UploadDocumentForm = ({
             onHidden={handlePopupHidden}
         >
             <ScrollView width="100%" height="100%" ref={scrollViewRef}>
-                <form onSubmit={handleSubmit}>
-                    <Form
-                        formData={formData}
-                        ref={formRef}
-                        onFieldDataChanged={onFieldDataChanged}
-                        onInitialized={onFormInitialized}
-                        showRequiredMark={true}
-                        showValidationSummary={true}
-                        validationGroup={"uploadDocumentGroup"}
+                <Form
+                    formData={formData}
+                    ref={formRef}
+                    onFieldDataChanged={onFieldDataChanged}
+                    onInitialized={onFormInitialized}
+                    showRequiredMark={true}
+                    showValidationSummary={true}
+                    validationGroup={"uploadDocumentGroup"}
+                >
+                    <ValidationSummary
+                        ref={validationSummaryRef}
+                        hoverStateEnabled={true}
+                        elementAttr={validationSummaryAttr}
+                        onItemClick={handleValidationSummaryItemClick}
+                    />
+                    <SimpleItem
+                        name="title"
+                        dataField="title"
+                        helpText="Provide the title for the document"
+                        label={{ visible: false }}
+                        isRequired={true}
+                        editorType="dxTextBox"
+                        editorOptions={titleEditorOptions}
                     >
-                        <ValidationSummary
-                            //validationGroup="uploadDocumentGroup"
-                            ref={validationSummaryRef}
-                            hoverStateEnabled={true}
-                            elementAttr={validationSummaryAttr}
-                            onItemClick={handleValidationSummaryItemClick}
-                            items={['file', 'title', 'categories']}
+                        <RequiredRule message="Title is required" />
+                        <AsyncRule
+                            message="Title already exists"
+                            type={"async"}
+                            ignoreEmptyValue={true}
+                            validationCallback={async (params) => {
+                                console.log("Validating title asynchronously:", params.value);
+                                if (params.value) {
+                                    const exists = await titleExists(params.value);
+                                    return !exists;
+                                }
+                                return true;
+                            }}
                         />
-                        <SimpleItem
-                            name="title"
-                            dataField="title"
-                            helpText="Provide the title for the document"
-                            label={{visible: false}}
-                            isRequired={true}
-                            editorType="dxTextBox"
-                            editorOptions={titleEditorOptions}
-                        >
-                            <RequiredRule message="Title is required"/>
-                            <AsyncRule
-                                message="Title already exists"
-                                validationCallback={async (params) => {
-                                    if (params.value) {
-                                        const exists = await titleExists(params.value);
-                                        return !exists;
-                                    }
-                                    return true;
-                                }}
-                            />
-                        </SimpleItem>
-                        <SimpleItem
-                            name="categories"
-                            dataField="categories"
-                            isRequired={true}
-                            editorType="dxTagBox"
-                            editorOptions={categoriesEditorOptions}
-                            label={{visible: false}}
+                    </SimpleItem>
+                    <SimpleItem
+                        name="categories"
+                        dataField="categories"
+                        isRequired={true}
+                        editorType="dxTagBox"
+                        editorOptions={categoriesEditorOptions}
+                        label={{ visible: false }}
+                    />
+                    <SimpleItem
+                        name={"file"}
+                        dataField={"file"}
+                        isRequired={true}
+                        render={() => isUploaderReady &&
+                            <div>
+                                <DocumentUploader
+                                    value={formData.file}
+                                    handleValueChange={handleFileChange}
+                                    dropZoneWidth={500}
+                                />
+                                <Validator
+                                    validationGroup="uploadDocumentGroup"
+                                    name={"file"}
+                                    adapter={{
+                                        getValue: () => formData.file,
+                                        reset: () => setFormData(prevState => ({ ...prevState, file: [] })),
+                                        validationRequestsCallbacks: []
+                                    }}
+                                    validationRules={[{
+                                        type: "custom",
+                                        validationCallback: (params) => {
+                                            return params.value && params.value.length > 0;
+                                        },
+                                        message: "File is required"
+                                    }]}
+                                />
+                            </div>
+                        }
+                    />
+                    <GroupItem colCount={2}>
+                        <ButtonItem
+                            horizontalAlignment="center"
+                            buttonOptions={submitButtonOptions}
                         />
-                        <SimpleItem
-                            name={"file"}
-                            dataField={"file"}
-                            isRequired={true}
-                            render={() => isUploaderReady &&
-                                <div>
-                                    <DocumentUploader
-                                        value={formData.file}
-                                        handleValueChange={handleFileChange}
-                                        dropZoneWidth={500}
-                                    />
-                                    <Validator
-                                        validationGroup="uploadDocumentGroup"
-                                        name={"file"}
-                                        adapter={{
-                                            getValue: () => formData.file,
-                                            reset: () => setFormData(prevState => ({...prevState, file: []})),
-                                            validationRequestsCallbacks: []
-                                        }}
-                                        validationRules={[{
-                                            type: "custom",
-                                            validationCallback: (params) => {
-                                                return params.value && params.value.length > 0;
-                                            },
-                                            message: "File is required"
-                                        }]}
-                                        onValidated={handleValidated}
-                                    />
-                                </div>
-                            }
+                        <ButtonItem
+                            horizontalAlignment="center"
+                            buttonOptions={{
+                                text: "Cancel",
+                                type: "normal",
+                                onClick: () => {
+                                    popupRef.current.instance.hide();
+                                }
+                            }}
                         />
-                        <GroupItem colCount={2}>
-                            <ButtonItem
-                                horizontalAlignment="center"
-                                buttonOptions={submitButtonOptions}
-                            />
-                            <ButtonItem
-                                horizontalAlignment="center"
-                                buttonOptions={{
-                                    text: "Cancel",
-                                    type: "normal",
-                                    onClick: () => {
-                                        popupRef.current.instance.hide();
-                                    }
-                                }}
-                            />
-                        </GroupItem>
-                    </Form>
-                </form>
+                    </GroupItem>
+                </Form>
             </ScrollView>
         </Popup>
     );

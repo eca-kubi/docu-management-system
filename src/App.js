@@ -1,5 +1,5 @@
 //import 'devextreme/dist/css/dx.common.css';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {HashRouter as Router} from 'react-router-dom';
 import LoadPanel from 'devextreme-react/load-panel';
 import {NavigationProvider} from './contexts/navigation';

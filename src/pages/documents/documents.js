@@ -1,119 +1,117 @@
-import './documents.scss';
-import React, {useCallback, useEffect, useMemo, useState} from "react";
-import SelectBox, {DropDownOptions} from 'devextreme-react/select-box'
-import FileCardGrid from "../../components/card-grid/FileCardGrid"
-import {useAuth} from "../../contexts/auth";
-import {get, patch, post} from "../../utils/api";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import SelectBox, { DropDownOptions } from 'devextreme-react/select-box';
+import FileCardGrid from "../../components/card-grid/FileCardGrid";
+import { useAuth } from "../../contexts/auth";
+import { get, patch, post } from "../../utils/api";
 import notify from 'devextreme/ui/notify';
-import {Button, SpeedDialAction, TagBox, TextBox} from "devextreme-react";
+import { Button, SpeedDialAction, TagBox, TextBox } from "devextreme-react";
 import LoadPanel from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
 import ArrayStore from "devextreme/data/array_store";
-import _, {isNull} from "lodash";
+import _, { isNull } from "lodash";
 import AutoSearchBox from "../../components/auto-searchbox/AutoSearchBox";
-import {useCategories} from "../../app-hooks";
+import { useCategories } from "../../app-hooks";
 import UploadDocumentForm from "../../components/upload-document-form/UploadDocumentForm";
 import axios from "axios";
 
 const Documents = () => {
-    const [documents, setDocuments] = useState([])
-    const [, setSelectedDocIds] = useState([])
-    const [isLoadPanelVisible, setIsLoadPanelVisible] = useState(true)
-    const [currentPage, setCurrentPage] = useState(0)
-    const [pages, setPages] = useState([1])
-    const [totalPages, setTotalPages] = useState(pages.length)
-    const [pageSize] = useState(9)
-    const tagRef = React.createRef()
-    const {user} = useAuth()
-    const [selectedCategories, setSelectedCategories] = useState([])
-    const [lastUpdateTime, setLastUpdateTime] = useState(new Date())
-    const [searchResults, setSearchResults] = useState([])
-    const {mutate: mutateCategories, categories} = useCategories()
-    const [allCategories, setAllCategories] = useState([])
-    const [isPopupVisible, setIsPopupVisible] = useState(false)
+    const [documents, setDocuments] = useState([]);
+    const [, setSelectedDocIds] = useState([]);
+    const [isLoadPanelVisible, setIsLoadPanelVisible] = useState(true);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pages, setPages] = useState([1]);
+    const [totalPages, setTotalPages] = useState(pages.length);
+    const [pageSize] = useState(9);
+    const tagRef = React.createRef();
+    const { user } = useAuth();
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
+    const [searchResults, setSearchResults] = useState([]);
+    const { mutate: mutateCategories, categories } = useCategories();
+    const [allCategories, setAllCategories] = useState([]);
+    const [isPopupVisible, setIsPopupVisible] = useState(false);
 
     const handleCategoryUpdate = useCallback(async (docId, category) => {
         const newCategories = [...new Set([...category, ...categories])];
-        setAllCategories(newCategories)
+        setAllCategories(newCategories);
 
         try {
-            patch(`${process.env.REACT_APP_API_URL}/documents/${docId}`, {categories: category})
-                .then((response) => {
-                    if (response.isOk) {
-                        console.log('Document category updated successfully.')
-                        setLastUpdateTime(new Date())
-                    } else {
-                        console.log('Failed to update document category.')
-                        notify('Failed to update document category.', 'error', 3000)
-                    }
-                });
-            // Optimistically update the cache
+            const response = await patch(`${process.env.REACT_APP_API_URL}/documents/${docId}`, { categories: category });
+            if (response.isOk) {
+                console.log('Document category updated successfully.');
+                setLastUpdateTime(new Date());
+            } else {
+                console.log('Failed to update document category.');
+                notify('Failed to update document category.', 'error', 3000);
+            }
+
             await mutateCategories(async (currentCategories) => {
                 return [...new Set([...category, ...currentCategories])];
             });
 
-            post(`${process.env.REACT_APP_API_URL}/categories`, {categories: category})
-                .then(async (response) => {
-                    if (response.isOk) {
-                        console.log('Categories updated successfully.')
-                        await mutateCategories(response.data);
-                    } else {
-                        console.log('Failed to update categories.')
-                        notify('Failed to update categories.', 'error', 3000)
-                    }
-                });
+            const categoryResponse = await post(`${process.env.REACT_APP_API_URL}/categories`, { categories: category });
+            if (categoryResponse.isOk) {
+                console.log('Categories updated successfully.');
+                await mutateCategories(categoryResponse.data);
+            } else {
+                console.log('Failed to update categories.');
+                notify('Failed to update categories.', 'error', 3000);
+            }
         } catch (e) {
-            console.log('Failed to update document category.', e)
-            notify('Failed to update document category.', 'error', 3000)
+            console.log('Failed to update document category.', e);
+            notify('Failed to update document category.', 'error', 3000);
         }
     }, [categories, mutateCategories]);
 
     const handleDocumentSelection = useCallback((id, isDocSelected) => {
         setSelectedDocIds((prevState) => {
             if (isDocSelected) {
-                return [...prevState, id]
+                return [...prevState, id];
             } else {
-                return prevState.filter((docId) => docId !== id)
+                return prevState.filter((docId) => docId !== id);
             }
-        })
+        });
     }, []);
 
     const documentStore = useMemo(() => {
+        console.log('Documents:', documents); // Debugging statement
         return new ArrayStore({
             data: documents,
             key: 'id',
             onLoading: () => {
-                setIsLoadPanelVisible(true)
+                setIsLoadPanelVisible(true);
             },
             onLoaded: () => {
-                setIsLoadPanelVisible(false)
+                setIsLoadPanelVisible(false);
             }
-        })
+        });
     }, [documents]);
 
     const itemDatasource = useMemo(() => {
-        return new DataSource({
+        const ds = new DataSource({
             store: documentStore,
             key: 'id',
-            sort: {selector: 'uploadDate', desc: true},
+            sort: { selector: 'uploadDate', desc: true },
             paginate: true,
             pageSize: pageSize,
             requireTotalCount: true,
             onLoadingChanged: (isLoading) => {
-                setIsLoadPanelVisible(isLoading)
+                setIsLoadPanelVisible(isLoading);
             }
-        })
+        });
+        console.log('DataSource initialized:', ds);
+        return ds;
     }, [documentStore, pageSize]);
 
     function Field() {
         return <TextBox placeholder={totalPages ? "Page " + (itemDatasource.pageIndex() + 1) + " of " + totalPages : ""}
-                        width={'100%'}/>
+                        width={'100%'}/>;
     }
 
     const filterByCategories = useCallback((doc) => {
         return doc.categories.some((category) => {
-            return _.isEmpty(selectedCategories) || selectedCategories.includes(category)
-        })
+            return _.isEmpty(selectedCategories) || selectedCategories.includes(category);
+        });
     }, [selectedCategories]);
 
     const listDataSource = useMemo(() => {
@@ -126,20 +124,18 @@ const Documents = () => {
     }, [searchResults]);
 
     const handleSearchResults = useCallback((data) => {
-        console.log('Search results:', data)
+        console.log('Search results:', data);
         setSearchResults(data);
     }, []);
 
-    const handleDownload = useCallback(({event}, id) => {
-        console.log('Download document with id:', id)
-        // Todo: An api call to download the document
-        event.stopPropagation()
+    const handleDownload = useCallback(({ event }, id) => {
+        console.log('Download document with id:', id);
+        event.stopPropagation();
     }, []);
 
-    const handleDelete = useCallback(({event}, id) => {
-        console.log('Delete document with id:', id)
-        // Todo: An api call to delete the document
-        event.stopPropagation()
+    const handleDelete = useCallback(({ event }, id) => {
+        console.log('Delete document with id:', id);
+        event.stopPropagation();
     }, []);
 
     const listOptions = useMemo(() => ({
@@ -152,33 +148,21 @@ const Documents = () => {
                     <span>{item.title}</span>
                     <div className="group-hover:block action-buttons hidden">
                         <div className="flex gap-2">
-                            <Button onClick={(e) => handleDownload(e, item["hashValue"])} icon='download'>
-                            </Button>
-                            <Button onClick={(e) => handleDelete(e, item["hashValue"])} icon='trash'>
-                            </Button>
+                            <Button onClick={(e) => handleDownload(e, item["hashValue"])} icon='download'/>
+                            <Button onClick={(e) => handleDelete(e, item["hashValue"])} icon='trash'/>
                         </div>
                     </div>
                 </div>
-            )
+            );
         }
     }), [handleDelete, handleDownload, listDataSource]);
 
-    useEffect(() => {
-        itemDatasource.filter(filterByCategories);
-        itemDatasource.load().then(() => {
-            const filteredCount = itemDatasource.totalCount();
-            console.log('Total count after specific filter:', filteredCount);
-        });
-        setTotalPages(Math.ceil(itemDatasource.totalCount() / pageSize));
-        setPages([...Array(totalPages).keys()].map((i) => i + 1));
-    }, [filterByCategories, itemDatasource, pageSize, selectedCategories, totalPages]);
-
-    // Fetch updated documents whenever lastUpdateTime changes
-    useEffect(() => {
+    const refreshDocuments = useCallback(() => {
         const fetchUpdatedDocuments = async () => {
             try {
                 const response = await get(`${process.env.REACT_APP_API_URL}/users/${user.id}/documents`);
                 if (response.isOk) {
+                    console.log('Fetched documents:', response.data); // Debugging statement
                     setDocuments(response.data);
                 } else {
                     console.log('Failed to fetch updated documents from server.');
@@ -191,13 +175,15 @@ const Documents = () => {
         };
 
         fetchUpdatedDocuments().then(() => console.log('Updated documents fetched successfully.'));
-    }, [lastUpdateTime, user.id]);
-
+    }, [user.id]);
 
     useEffect(() => {
-        setAllCategories(categories)
-    }, [categories])
+        refreshDocuments();
+    }, [lastUpdateTime, refreshDocuments]);
 
+    useEffect(() => {
+        setAllCategories(categories);
+    }, [categories]);
 
     const handleFormSubmit = useCallback(async (formData) => {
         console.log('Handle submit: ', formData);
@@ -206,7 +192,6 @@ const Documents = () => {
         const title = formData.title;
         const categories = formData.categories;
 
-        // Create a FormData object to handle the file upload
         const uploadData = new FormData();
         uploadData.append('file', file);
         uploadData.append('title', title.trim());
@@ -214,7 +199,6 @@ const Documents = () => {
         uploadData.append('userId', user.id);
 
         try {
-            // Upload the file to the server
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/documents/upload`, uploadData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -224,13 +208,10 @@ const Documents = () => {
             if (response.status === 200) {
                 console.log('File uploaded successfully:', response.data);
 
-                // Update the documents state with the new document
                 setDocuments(prevDocuments => [...prevDocuments, response.data.document]);
 
-                // Close the popup
                 setIsPopupVisible(false);
 
-                // Show a success notification
                 notify('Document uploaded successfully.', 'success', 3000);
             } else if (response.status === 400 && response.data.error === 'duplicate file') {
                 const { title, uploadDate, categories } = response.data["existing_document"];
@@ -247,21 +228,17 @@ const Documents = () => {
         }
     }, [user.id, setDocuments, setIsPopupVisible]);
 
-
-
     const handleFieldChange = useCallback((e) => {
         if (e.dataField === 'title') {
-
+            // Handle title change
         }
         if (e.dataField === 'categories') {
             const newCategories = e.value.filter(category => !categories.includes(category));
 
             if (newCategories.length > 0) {
-                // Post new categories to the backend
                 axios.post(`${process.env.REACT_APP_API_URL}/categories`, { categories: newCategories })
                     .then(response => {
                         console.log('New categories posted:', response.data);
-                        // Update the categories using mutate
                         mutateCategories([...categories, ...response.data]).then(r => console.log(r));
                     })
                     .catch(error => {
@@ -272,12 +249,12 @@ const Documents = () => {
     }, [categories, mutateCategories]);
 
     const handlePopupShown = useCallback(() => {
-        setIsPopupVisible(true)
-    }, [])
+        setIsPopupVisible(true);
+    }, []);
 
     const handlePopupHidden = useCallback(() => {
-        setIsPopupVisible(false)
-    }, [])
+        setIsPopupVisible(false);
+    }, []);
 
     return (
         <div className="p-3 shadow rounded bg-secondary-subtle">
@@ -287,7 +264,6 @@ const Documents = () => {
                                listOptions={listOptions}
                                onSearchResults={handleSearchResults}
                 />
-
                 <TagBox
                     ref={tagRef}
                     className='mb-2'
@@ -320,10 +296,10 @@ const Documents = () => {
                     fieldRender={Field}
                     onSelectionChanged={
                         (e) => {
-                            const page = isNull(e.selectedItem) ? itemDatasource.pageIndex() : e.selectedItem - 1
-                            setCurrentPage(page)
-                            itemDatasource.pageIndex(page)
-                            itemDatasource.load()
+                            const page = isNull(e.selectedItem) ? itemDatasource.pageIndex() : e.selectedItem - 1;
+                            setCurrentPage(page);
+                            itemDatasource.pageIndex(page);
+                            itemDatasource.load();
                         }
                     }
                     buttons={[
@@ -334,9 +310,9 @@ const Documents = () => {
                                 icon: 'chevronleft',
                                 onClick: () => {
                                     if (currentPage > 0) {
-                                        setCurrentPage(currentPage - 1)
-                                        itemDatasource.pageIndex(currentPage - 1)
-                                        itemDatasource.load()
+                                        setCurrentPage(currentPage - 1);
+                                        itemDatasource.pageIndex(currentPage - 1);
+                                        itemDatasource.load();
                                     }
                                 },
                                 disabled: currentPage === 0 || totalPages === 0
@@ -349,9 +325,9 @@ const Documents = () => {
                                 icon: 'chevronright',
                                 onClick: () => {
                                     if (currentPage < totalPages) {
-                                        setCurrentPage(currentPage + 1)
-                                        itemDatasource.pageIndex(currentPage + 1)
-                                        itemDatasource.load()
+                                        setCurrentPage(currentPage + 1);
+                                        itemDatasource.pageIndex(currentPage + 1);
+                                        itemDatasource.load();
                                     }
                                 },
                                 disabled: currentPage + 1 === totalPages || totalPages === 0
@@ -362,47 +338,25 @@ const Documents = () => {
                 </SelectBox>
             </div>
             <div style={{height: '40px'}}>
-                {/*Just spacing between the search box and the document grid */}
+                {/* Just spacing between the search box and the document grid */}
             </div>
             <div className='card-grid h-100' id="#cardGrid">
                 <FileCardGrid itemDatasource={itemDatasource}
                               allCategories={allCategories}
                               onCategoryUpdate={handleCategoryUpdate}
                               onCardSelected={handleDocumentSelection}
+                              refreshDocuments={refreshDocuments}
                 />
             </div>
-
-            {/*            <SpeedDialAction
-                hint={'Search documents'}
-                icon={'search'}
-                label={'Search'}
-                onClick={() => {
-                }}
-            />*/}
             <SpeedDialAction
                 hint={'Upload documents'}
                 icon={'upload'}
                 label={'Upload'}
                 onClick={() => {
-                    // show the upload document form
-                    setIsPopupVisible(true)
+                    setIsPopupVisible(true);
                 }}
             />
-            {/*<SpeedDialAction
-                hint={'Download documents'}
-                label={'Download'}
-                icon={'download'}
-                visible={selectedDocIds.length > 0}
-            />
-            <SpeedDialAction
-                hint={'Delete documents'}
-                icon={'trash'}
-                label={'Delete'}
-                visible={selectedDocIds.length > 0}
-            />*/}
-
             <LoadPanel container={'.card-grid'} visible={isLoadPanelVisible}/>
-
             <UploadDocumentForm
                 isPopupVisible={isPopupVisible}
                 handleFieldChange={handleFieldChange}
@@ -410,9 +364,8 @@ const Documents = () => {
                 handlePopupShown={handlePopupShown}
                 handlePopupHidden={handlePopupHidden}
             />
-
         </div>
-    )
-}
+    );
+};
 
-export default Documents
+export default Documents;
