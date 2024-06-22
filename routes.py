@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from flask import Blueprint
+from flask import Blueprint, send_file, jsonify
 from flask import request
 from flask_cors import cross_origin
 from tinydb import Query
@@ -15,6 +15,8 @@ db = Database().get_db()
 
 search_bp = Blueprint('search', __name__)
 upload_file_bp = Blueprint('upload_file', __name__)
+download_bp = Blueprint('download', __name__)
+delete_bp = Blueprint('delete', __name__)
 
 
 @search_bp.route('/search', methods=['GET'])
@@ -38,6 +40,27 @@ def search():
     documents_dict = [document.__dict__ for document in documents]
 
     return documents_dict, 200
+
+
+@search_bp.route('/validate_title', methods=['GET'])
+def validate_title():
+    # Get the user id and document title from the query parameters
+    user_id = request.args.get('user_id')
+    title = request.args.get('title')
+
+    # Check if user_id and title are provided
+    if not user_id or not title:
+        return {'message': 'User ID and title are required'}, 400
+
+    # Query the documents table for the given title and user_id
+    Document = Query()
+    documents_table = db.table('documents')
+    existing_document = documents_table.get((Document.userId == user_id) & (Document.title == title))
+
+    if existing_document:
+        return {'exists': True, 'message': 'Title already exists'}, 200
+    else:
+        return {'exists': False, 'message': 'Title does not exist'}, 200
 
 
 @upload_file_bp.route('/documents/upload', methods=['POST'])
@@ -83,7 +106,7 @@ def upload_file():
 
             if existing_document:
                 return {
-                    'message': 'A file with the same content already exists',
+                    'message': 'This file already exists',
                     'error': 'duplicate file',
                     'existing_document': {
                         'title': existing_document['title'],
@@ -120,3 +143,43 @@ def upload_file():
                 return {'message': 'File successfully uploaded', 'document': new_document}, 200
     except Exception as e:
         return {'message': str(e)}, 500
+
+
+@download_bp.route('/download/<file_id>', methods=['GET'])
+def download_file(file_id):
+    from app import UPLOAD_FOLDER
+
+    Document = Query()
+    documents_table = db.table('documents')
+    document = documents_table.get(Document.id == file_id)
+
+    if not document:
+        return jsonify({'message': 'File not found'}), 404
+
+    file_path = os.path.join(UPLOAD_FOLDER, f"{document['hashValue']}{document['fileExt']}")
+
+    if not os.path.exists(file_path):
+        return jsonify({'message': 'File not found on server'}), 404
+
+    return send_file(file_path, as_attachment=True, download_name=document['title'] + document['fileExt'])
+
+
+@delete_bp.route('/delete/<file_id>', methods=['DELETE'])
+def delete_file(file_id):
+    from app import UPLOAD_FOLDER
+
+    Document = Query()
+    documents_table = db.table('documents')
+    document = documents_table.get(Document.id == file_id)
+
+    if not document:
+        return jsonify({'message': 'File not found'}), 404
+
+    file_path = os.path.join(UPLOAD_FOLDER, f"{document['hashValue']}{document['fileExt']}")
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    documents_table.remove(Document.id == file_id)
+
+    return jsonify({'message': 'File successfully deleted'}), 200

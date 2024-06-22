@@ -3,34 +3,37 @@
         "1": {
             "id": "1",
             "data": [
-                "Finance",
-                "School",
-                "Urgent",
-                "Important",
-                "Pending Review",
-                "Draft",
-                "Rejected",
                 "Personal",
-                "In Progress",
-                "Pending Approval",
-                "Health",
-                "Legal",
-                "Political",
-                "Pending",
-                "Feedback Received",
-                "Monthly Report",
-                "Completed",
-                "Stationary",
-                "Miscellaneous",
-                "Culture",
-                "Approved",
-                "Daily Report",
-                "Weekly Report",
-                "Confidential",
+                "Rejected",
+                "Education",
                 "Work",
+                "Pending",
+                "Pending Review",
+                "Monthly Report",
                 "Final",
+                "Review",
+                "Attitude",
+                "Feedback Received",
+                "Miscellaneous",
                 "Archive",
-                "Review"
+                "Urgent",
+                "Health",
+                "Finance",
+                "Daily Report",
+                "Confidential",
+                "Weekly Report",
+                "Pending Approval",
+                "Approved",
+                "Completed",
+                "Fan",
+                "Culture",
+                "In Progress",
+                "Legal",
+                "School",
+                "Draft",
+                "Important",
+                "Political",
+                "Stationary"
             ]
         }
     },
@@ -71,18 +74,74 @@
     },
     "documents": {
         "1": {
-            "id": "3bfb5d20-6d21-457e-b354-b9614327b3f2",
+            "id": "95e5177f-35ca-41cc-8436-8cc18c47c29a",
             "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
             "author": "Connor Stroman",
-            "title": "Doc Title",
-            "hashValue": "10fc84e92c8d0b0403c0f1c7dc50919917132cb94548cab4ce3c137f377f660d",
-            "fileExt": ".png",
-            "fileType": ".png",
-            "uploadDate": "2024-06-13T02:47:36.262227",
-            "uploadDateReadable": "13-Jun-2024 02:47",
+            "title": "Title 1",
+            "hashValue": "dff9f817ae34ce9a85c6c26519cd27350965b6625e367703eaef07372dda7be5",
+            "fileExt": ".xlsx",
+            "fileType": ".xlsx",
+            "uploadDate": "2024-06-21T18:16:41.359894",
+            "uploadDateReadable": "21-Jun-2024 18:16",
             "categories": [
-                "Draft",
-                "Feedback Received"
+                "Approved"
+            ]
+        },
+        "2": {
+            "id": "310ad0bb-5b12-4134-82b7-48e93aff136d",
+            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "author": "Connor Stroman",
+            "title": "Title 2",
+            "hashValue": "626ca01dca59f69fc4faf6321f66197db0997a23d08c18c24988eca6858ec1f1",
+            "fileExt": ".xlsx",
+            "fileType": ".xlsx",
+            "uploadDate": "2024-06-21T18:35:38.113754",
+            "uploadDateReadable": "21-Jun-2024 18:35",
+            "categories": [
+                "Approved"
+            ]
+        },
+        "3": {
+            "id": "2cd8d5db-a42c-4c40-b7ca-993a739e05fe",
+            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "author": "Connor Stroman",
+            "title": "Title 3",
+            "hashValue": "ecfaa46cb032d3f83f3dfeb4ba8a5129caad65ac1b42b70baa865a2a39ba3357",
+            "fileExt": ".xlsm",
+            "fileType": ".xlsm",
+            "uploadDate": "2024-06-21T18:50:14.025801",
+            "uploadDateReadable": "21-Jun-2024 18:50",
+            "categories": [
+                "Education"
+            ]
+        },
+        "4": {
+            "id": "97e1bfb5-e3f5-4104-8a97-3c7833533dcf",
+            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "author": "Connor Stroman",
+            "title": "Title 4",
+            "hashValue": "071d1489a05d2c022c154105eaf29f24a95bece62d5114481ef1542ed3aa94e7",
+            "fileExt": ".xlsx",
+            "fileType": ".xlsx",
+            "uploadDate": "2024-06-21T18:59:40.036887",
+            "uploadDateReadable": "21-Jun-2024 18:59",
+            "categories": [
+                "Hacking"
+            ]
+        },
+        "5": {
+            "id": "d83c1a5e-584d-41d6-8185-8ecfcf631f59",
+            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "author": "Connor Stroman",
+            "title": "Title 5",
+            "hashValue": "96357a383394c2243ac4ebeb0f2bcb8aca034f5e92819f5f5f6e85de3231dc01",
+            "fileExt": ".log",
+            "fileType": ".log",
+            "uploadDate": "2024-06-21T19:04:56.141280",
+            "uploadDateReadable": "21-Jun-2024 19:04",
+            "categories": [
+                "Fan",
+                "Final"
             ]
         }
     }
