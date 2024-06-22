@@ -1,42 +1,31 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Popup, ScrollView } from "devextreme-react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {Popup, ScrollView, SpeedDialAction} from "devextreme-react";
 import ValidationSummary from 'devextreme-react/validation-summary';
-import Form, { AsyncRule, ButtonItem, GroupItem, RequiredRule, SimpleItem } from "devextreme-react/form";
-import { Validator } from 'devextreme-react/validator';
+import Form, {AsyncRule, ButtonItem, GroupItem, RequiredRule, SimpleItem} from "devextreme-react/form";
+import {Validator} from 'devextreme-react/validator';
 import validationEngine from 'devextreme/ui/validation_engine';
-import { useCategories } from "../../app-hooks";
-import { useAuth } from "../../contexts/auth";
+import {useCategories} from "../../app-hooks";
+import {useAuth} from "../../contexts/auth";
 import DocumentUploader from "../document-uploader/DocumentUploader";
 
-const UploadDocumentForm = ({
-                                isPopupVisible,
-                                handleFieldChange,
-                                handleFormSubmit,
-                                handlePopupShown,
-                                handlePopupHidden
-                            }) => {
-    const { user } = useAuth();
-    const [formData, setFormData] = useState({ title: '', categories: [], file: [] });
-    const { categories } = useCategories();
-
+const UploadDocumentForm = ({handleFormSubmit}) => {
+    const {user} = useAuth();
+    const [formData, setFormData] = useState({title: '', categories: [], file: []});
     const popupRef = useRef(null);
     const formRef = useRef(null);
     const validationSummaryRef = useRef(null);
     const scrollViewRef = useRef(null);
-
+    const timeoutRef = useRef(null);
+    const {categories} = useCategories();
     const [sortedCategories, setSortedCategories] = useState([]);
     const [isUploaderReady, setUploaderReady] = useState(false);
-    const timeoutRef = useRef(null);
 
     useEffect(() => {
         if (categories) {
             const sorted = [...categories].sort((a, b) => a.localeCompare(b));
             setSortedCategories(sorted);
         }
-        if (isPopupVisible) {
-            setFormData({ file: [], title: '', categories: [] });
-        }
-    }, [categories, isPopupVisible]);
+    }, [categories]);
 
     const scrollToValidationSummary = useCallback(() => {
         if (scrollViewRef.current) {
@@ -47,35 +36,6 @@ const UploadDocumentForm = ({
         }
     }, []);
 
-    const handleValidated = useCallback(async (e) => {
-        if (!e.brokenRules.length) { // Check if there are any broken rules
-            await handleFormSubmit(formData);
-        } else {
-            scrollToValidationSummary();
-        }
-    }, [formData, handleFormSubmit, scrollToValidationSummary]);
-
-    useEffect(() => {
-        const attachValidatedEvent = () => {
-            const group = validationEngine.getGroupConfig('uploadDocumentGroup');
-            if (group) {
-                group.on('validated', handleValidated);
-            }
-        };
-
-        if (isPopupVisible && formRef.current) {
-            attachValidatedEvent(); // Attach only when the popup is visible and the form is ready
-        }
-
-        return () => {
-            const group = validationEngine.getGroupConfig('uploadDocumentGroup');
-            if (group) {
-                group.off('validated', handleValidated);
-            }
-        };
-    }, [isPopupVisible, handleValidated]); // Add handleValidated to dependency array
-
-
     const onFormInitialized = useCallback((e) => {
         formRef.current = e.component;
     }, []);
@@ -83,15 +43,20 @@ const UploadDocumentForm = ({
     const onPopupShown = useCallback(() => {
         setUploaderReady(true);
         timeoutRef.current = setTimeout(() => {
-            if (formRef.current) {
+            if (formRef.current && formRef.current.getEditor) {
                 const titleEditor = formRef.current.getEditor('title');
                 if (titleEditor) {
                     titleEditor.focus();
                 }
             }
         }, 500);
-        handlePopupShown();
-    }, [handlePopupShown]);
+    }, []);
+
+    const onPopupHidden = useCallback(() => {
+        setFormData({title: '', categories: [], file: []});
+        setUploaderReady(false);
+        clearTimeout(timeoutRef.current);
+    }, []);
 
     const titleExists = useCallback(async (title) => {
         try {
@@ -104,18 +69,27 @@ const UploadDocumentForm = ({
         }
     }, [user.id]);
 
-    const onFieldDataChanged = useCallback((e) => {
-        handleFieldChange(e);
-    }, [handleFieldChange]);
-
     const handleFileChange = useCallback((value) => {
-        setFormData(prevState => ({ ...prevState, file: value || [] }));
-        onFieldDataChanged({ dataField: 'file', value: value || [] });
-    }, [onFieldDataChanged]);
+        setFormData(prevState => ({...prevState, file: value || []}));
+    }, []);
 
     const handleValidationAndSubmit = useCallback(async () => {
-        await validationEngine.validateGroup('uploadDocumentGroup');
-    }, []);
+
+        const res = validationEngine.validateGroup('uploadDocumentGroup')
+        res.status === "pending" && res.complete.then(async (result) => {
+            console.log('status: ', res.status)
+            console.log('result: ', result)
+            if (result.isValid) {
+                if (await handleFormSubmit(formData)) {
+                    popupRef.current.instance.hide();
+                }
+            } else {
+                // Scroll to validation errors summary
+                scrollToValidationSummary();
+            }
+        });
+        res.status === "invalid" && scrollToValidationSummary();
+    }, [formData, handleFormSubmit, scrollToValidationSummary]);
 
     const titleEditorOptions = useMemo(() => ({
         labelMode: 'floating',
@@ -137,7 +111,7 @@ const UploadDocumentForm = ({
         applyValueMode: 'instantly',
         maxDisplayedTags: 5,
         showMultiTagOnly: false,
-        dropDownOptions: { hideOnOutsideClick: true },
+        dropDownOptions: {hideOnOutsideClick: true},
         searchEnabled: true
     }), [sortedCategories]);
 
@@ -148,26 +122,15 @@ const UploadDocumentForm = ({
         validationGroup: "uploadDocumentGroup",
     }), [handleValidationAndSubmit]);
 
-    const validationSummaryAttr = useMemo(() => ({ id: 'validationSummary' }), []);
-
-    const handleValidationSummaryItemClick = useCallback(() => {
-        console.log("Validation Item Clicked");
-    }, []);
-
-    const onPopupHidden = useCallback(() => {
-        setFormData({ title: '', categories: [], file: [] });
-        handlePopupHidden();
-    }, [handlePopupHidden]);
-
     return (
         <Popup
-            visible={isPopupVisible}
-            dragEnabled={false}
+            dragEnabled={true}
             hideOnOutsideClick={true}
             title="Document Details"
             width={600}
             height={600}
             ref={popupRef}
+            showCloseButton={true}
             onShown={onPopupShown}
             onHidden={onPopupHidden}
         >
@@ -175,7 +138,7 @@ const UploadDocumentForm = ({
                 <Form
                     formData={formData}
                     ref={formRef}
-                    onFieldDataChanged={onFieldDataChanged}
+                    //onFieldDataChanged={onFieldDataChanged}
                     onInitialized={onFormInitialized}
                     showRequiredMark={true}
                     showValidationSummary={true}
@@ -184,29 +147,30 @@ const UploadDocumentForm = ({
                     <ValidationSummary
                         ref={validationSummaryRef}
                         hoverStateEnabled={true}
-                        elementAttr={validationSummaryAttr}
-                        onItemClick={handleValidationSummaryItemClick}
+                        //onItemClick={handleValidationSummaryItemClick}
                     />
                     <SimpleItem
                         name="title"
                         dataField="title"
                         helpText="Provide the title for the document"
-                        label={{ visible: false }}
+                        label={{visible: false}}
                         isRequired={true}
                         editorType="dxTextBox"
                         editorOptions={titleEditorOptions}
                     >
-                        <RequiredRule message="Title is required" />
+                        <RequiredRule message="Title is required"/>
                         <AsyncRule
                             message="Title already exists"
                             type={"async"}
                             ignoreEmptyValue={true}
-                            validationCallback={async (params) => {
-                                if (params.value) {
-                                    const exists = await titleExists(params.value);
-                                    return !exists;
-                                }
-                                return true;
+                            validationCallback={(params) => {
+                                return new Promise(async (resolve) => {
+                                    if (params.value) {
+                                        const exists = await titleExists(params.value);
+                                        resolve(!exists)
+                                    }
+                                    resolve(true)
+                                })
                             }}
                         />
                     </SimpleItem>
@@ -216,16 +180,15 @@ const UploadDocumentForm = ({
                         isRequired={true}
                         editorType="dxTagBox"
                         editorOptions={categoriesEditorOptions}
-                        label={{ visible: false }}
+                        label={{visible: false}}
                     >
-                        <RequiredRule message="At least one category is required" />
+                        <RequiredRule message="At least one category is required"/>
                     </SimpleItem>
                     <SimpleItem
                         name={"file"}
                         dataField={"file"}
-                        isRequired={true}
                         render={() => isUploaderReady &&
-                            <div>
+                            <>
                                 <DocumentUploader
                                     value={formData.file}
                                     handleValueChange={handleFileChange}
@@ -236,7 +199,7 @@ const UploadDocumentForm = ({
                                     name={"file"}
                                     adapter={{
                                         getValue: () => formData.file,
-                                        reset: () => setFormData(prevState => ({ ...prevState, file: [] })),
+                                        reset: () => setFormData(prevState => ({...prevState, file: []})),
                                         validationRequestsCallbacks: []
                                     }}
                                     validationRules={[{
@@ -247,7 +210,7 @@ const UploadDocumentForm = ({
                                         message: "File is required"
                                     }]}
                                 />
-                            </div>
+                            </>
                         }
                     />
                     <GroupItem colCount={2}>
@@ -268,6 +231,15 @@ const UploadDocumentForm = ({
                     </GroupItem>
                 </Form>
             </ScrollView>
+            <SpeedDialAction
+                hint={'Upload documents'}
+                icon={'upload'}
+                label={'Upload'}
+                onClick={() => {
+                    //setPopupVisible(true)
+                    popupRef.current.instance.show();
+                }}
+            />
         </Popup>
     );
 };

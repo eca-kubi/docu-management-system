@@ -1,16 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import SelectBox, { DropDownOptions } from 'devextreme-react/select-box';
+import React, {useCallback, useEffect, useMemo, useState} from "react";
+import SelectBox, {DropDownOptions} from 'devextreme-react/select-box';
 import FileCardGrid from "../../components/card-grid/FileCardGrid";
-import { useAuth } from "../../contexts/auth";
-import { get, patch, post } from "../../utils/api";
+import {useAuth} from "../../contexts/auth";
+import {get, patch, post} from "../../utils/api";
 import notify from 'devextreme/ui/notify';
-import { Button, SpeedDialAction, TagBox, TextBox } from "devextreme-react";
+import {Button, TagBox, TextBox} from "devextreme-react";
 import LoadPanel from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
 import ArrayStore from "devextreme/data/array_store";
-import _, { isNull } from "lodash";
+import _, {isNull} from "lodash";
 import AutoSearchBox from "../../components/auto-searchbox/AutoSearchBox";
-import { useCategories } from "../../app-hooks";
+import {useCategories} from "../../app-hooks";
 import UploadDocumentForm from "../../components/upload-document-form/UploadDocumentForm";
 import axios from "axios";
 
@@ -23,20 +23,19 @@ const Documents = () => {
     const [totalPages, setTotalPages] = useState(pages.length);
     const [pageSize] = useState(9);
     const tagRef = React.createRef();
-    const { user } = useAuth();
+    const {user} = useAuth();
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
     const [searchResults, setSearchResults] = useState([]);
-    const { mutate: mutateCategories, categories } = useCategories();
+    const {mutate: mutateCategories, categories} = useCategories();
     const [allCategories, setAllCategories] = useState([]);
-    const [isPopupVisible, setIsPopupVisible] = useState(false);
 
     const handleCategoryUpdate = useCallback(async (docId, category) => {
         const newCategories = [...new Set([...category, ...categories])];
         setAllCategories(newCategories);
 
         try {
-            const response = await patch(`${process.env.REACT_APP_API_URL}/documents/${docId}`, { categories: category });
+            const response = await patch(`${process.env.REACT_APP_API_URL}/documents/${docId}`, {categories: category});
             if (response.isOk) {
                 console.log('Document category updated successfully.');
                 setLastUpdateTime(new Date());
@@ -49,7 +48,7 @@ const Documents = () => {
                 return [...new Set([...category, ...currentCategories])];
             });
 
-            const categoryResponse = await post(`${process.env.REACT_APP_API_URL}/categories`, { categories: category });
+            const categoryResponse = await post(`${process.env.REACT_APP_API_URL}/categories`, {categories: category});
             if (categoryResponse.isOk) {
                 console.log('Categories updated successfully.');
                 await mutateCategories(categoryResponse.data);
@@ -91,7 +90,7 @@ const Documents = () => {
         const ds = new DataSource({
             store: documentStore,
             key: 'id',
-            sort: { selector: 'uploadDate', desc: true },
+            sort: {selector: 'uploadDate', desc: true},
             paginate: true,
             pageSize: pageSize,
             requireTotalCount: true,
@@ -108,11 +107,11 @@ const Documents = () => {
                         width={'100%'}/>;
     }
 
-    const filterByCategories = useCallback((doc) => {
+/*    const filterByCategories = useCallback((doc) => {
         return doc.categories.some((category) => {
             return _.isEmpty(selectedCategories) || selectedCategories.includes(category);
         });
-    }, [selectedCategories]);
+    }, [selectedCategories]);*/
 
     const listDataSource = useMemo(() => {
         return new DataSource({
@@ -128,12 +127,12 @@ const Documents = () => {
         setSearchResults(data);
     }, []);
 
-    const handleDownload = useCallback(({ event }, id) => {
+    const handleDownload = useCallback(({event}, id) => {
         console.log('Download document with id:', id);
         event.stopPropagation();
     }, []);
 
-    const handleDelete = useCallback(({ event }, id) => {
+    const handleDelete = useCallback(({event}, id) => {
         console.log('Delete document with id:', id);
         event.stopPropagation();
     }, []);
@@ -210,51 +209,22 @@ const Documents = () => {
 
                 setDocuments(prevDocuments => [...prevDocuments, response.data.document]);
 
-                setIsPopupVisible(false);
-
                 notify('Document uploaded successfully.', 'success', 3000);
-            } else if (response.status === 400 && response.data.error === 'duplicate file') {
-                const { title, uploadDate, categories } = response.data["existing_document"];
-                const message = `A file with the same content already exists.\n\nTitle: ${title}\nUpload Date: ${uploadDate}\nCategories: ${categories.join(', ')}`;
-                console.log('Duplicate file:', message);
-                notify({ message, position: { at: 'center', my: 'center' }, width: 'auto' }, 'warning', 5000);
-            } else {
-                console.log('Failed to upload file:', response);
-                notify('Failed to upload document.', 'error', 3000);
+                return true;
             }
         } catch (error) {
-            console.log('Error uploading file:', error);
-            notify('Error uploading document.', 'error', 3000);
-        }
-    }, [user.id, setDocuments, setIsPopupVisible]);
-
-    const handleFieldChange = useCallback((e) => {
-        if (e.dataField === 'title') {
-            // Handle title change
-        }
-        if (e.dataField === 'categories') {
-            const newCategories = e.value.filter(category => !categories.includes(category));
-
-            if (newCategories.length > 0) {
-                axios.post(`${process.env.REACT_APP_API_URL}/categories`, { categories: newCategories })
-                    .then(response => {
-                        console.log('New categories posted:', response.data);
-                        mutateCategories([...categories, ...response.data]).then(r => console.log(r));
-                    })
-                    .catch(error => {
-                        console.error('Error posting new categories:', error);
-                    });
+            const {response} = error
+            if (response && response.status === 400 && response.data.error === 'duplicate file') {
+                const message = 'This file already exists.';
+                console.log('Duplicate file:', message);
+                notify({message, position: {at: 'center', my: 'center'}, width: 'auto'}, 'error', 6000);
+                return false;
             }
+            console.log('Error uploading file:', error);
+            notify('File upload has failed due to an error.', 'error', 3000);
+            return false;
         }
-    }, [categories, mutateCategories]);
-
-    const handlePopupShown = useCallback(() => {
-        setIsPopupVisible(true);
-    }, []);
-
-    const handlePopupHidden = useCallback(() => {
-        setIsPopupVisible(false);
-    }, []);
+    }, [user.id, setDocuments]);
 
     return (
         <div className="p-3 shadow rounded bg-secondary-subtle">
@@ -348,21 +318,9 @@ const Documents = () => {
                               refreshDocuments={refreshDocuments}
                 />
             </div>
-            <SpeedDialAction
-                hint={'Upload documents'}
-                icon={'upload'}
-                label={'Upload'}
-                onClick={() => {
-                    setIsPopupVisible(true);
-                }}
-            />
             <LoadPanel container={'.card-grid'} visible={isLoadPanelVisible}/>
             <UploadDocumentForm
-                isPopupVisible={isPopupVisible}
-                handleFieldChange={handleFieldChange}
                 handleFormSubmit={handleFormSubmit}
-                handlePopupShown={handlePopupShown}
-                handlePopupHidden={handlePopupHidden}
             />
         </div>
     );

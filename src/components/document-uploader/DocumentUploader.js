@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import FileUploader from 'devextreme-react/file-uploader';
 import ProgressBar from 'devextreme-react/progress-bar';
 import notify from 'devextreme/ui/notify';
@@ -13,7 +13,7 @@ import audioIcon from "./../../images/mp3_icon.png";
 import zipIcon from "./../../images/zip_icon.png";
 import documentIcon from "./../../images/document_icon.png";
 
-const DocumentUploader = React.memo(function DocumentUploader({ value = [], handleValueChange, dropZoneWidth = 350 }) {
+const DocumentUploader = React.memo(function DocumentUploader({value = [], handleValueChange, dropZoneWidth = 350}) {
     const [isDropZoneActive, setIsDropZoneActive] = useState(false);
     const [imageSource, setImageSource] = useState('');
     const [textVisible, setTextVisible] = useState(true);
@@ -40,8 +40,9 @@ const DocumentUploader = React.memo(function DocumentUploader({ value = [], hand
         setProgressValue((e.bytesLoaded / e.bytesTotal) * 100);
     }, []);
 
-    const handleFileLoad = useCallback((file) => {
+    const showFilePreview = useCallback((file) => {
         const fileReader = new FileReader();
+
         fileReader.onload = () => {
             const fileType = file.type.split('/')[0];
             const fileNameParts = file.name.split('.');
@@ -60,50 +61,46 @@ const DocumentUploader = React.memo(function DocumentUploader({ value = [], hand
             };
 
             const fileTypeIcon = iconMapping[fileExtension] || documentIcon;
-            setImageSource(fileType === 'image' ? fileReader.result : fileTypeIcon);
+            const imgSource = fileType === 'image' ? fileReader.result : fileTypeIcon
+            setImageSource(() => {
+                return imgSource;
+            });
+
         };
         fileReader.onerror = () => {
             notify({
                 message: "Failed to read the file.",
-                position: { at: 'center', my: 'center' }
+                position: {at: 'center', my: 'center'}
             }, "error", 5000);
         };
         fileReader.readAsDataURL(file);
         setTextVisible(false);
         setProgressVisible(false);
         setProgressValue(0);
+
     }, []);
 
-    const handleFileUpload = useCallback((e) => {
-        const { value } = e;
+    const onValueChanged = useCallback((e) => {
+        const {value} = e;
         handleValueChange(value);
-        if (value === null || value.length === 0) {
-            setImageSource('');
-            setTextVisible(true);
-            setIsDropZoneActive(false);
-            return;
-        }
-        if (value && value.length > 0) {
-            handleFileLoad(value[0]);
-        }
-    }, [handleFileLoad, handleValueChange]);
+    }, [handleValueChange]);
 
     useEffect(() => {
         if (value && value.length > 0) {
-            handleFileLoad(value[0]);
+            showFilePreview(value[0]);
         } else {
             setImageSource('');
             setTextVisible(true);
             setIsDropZoneActive(false);
         }
-    }, [handleFileLoad, value]);
+    }, [showFilePreview, value]);
 
     return (
         <div className="widget-container flex-box">
-            <div id="dropzone-external" style={{ width: dropZoneWidth }}
+            <div id="dropzone-external" style={{width: dropZoneWidth}}
                  className={`flex-box ${isDropZoneActive ? 'dx-theme-accent-as-border-color dropzone-active' : 'dx-theme-border-color'}`}
                  onClick={onDropZoneClick}>
-                {imageSource && <img id="dropzone-image" src={imageSource} alt="" />}
+                {imageSource && <img id="dropzone-image" src={imageSource} alt=""/>}
                 {textVisible && (
                     <div id="dropzone-text" className="flex-box">
                         <span>Drag & Drop the desired file</span>
@@ -129,7 +126,7 @@ const DocumentUploader = React.memo(function DocumentUploader({ value = [], hand
                 onDropZoneEnter={onDropZoneEnter}
                 onDropZoneLeave={onDropZoneLeave}
                 onProgress={onProgress}
-                onValueChanged={handleFileUpload}
+                onValueChanged={onValueChanged}
                 value={value || []}
             ></FileUploader>
         </div>
