@@ -115,6 +115,7 @@ def upload_file():
                     }
                 }, 400
             else:
+                new_categories = categories.split(',')
                 # Create a new document
                 new_document = {
                     'id': Database.generate_id(),
@@ -126,8 +127,16 @@ def upload_file():
                     'fileType': file_extension,
                     'uploadDate': datetime.now().isoformat(),
                     'uploadDateReadable': datetime.now().strftime('%d-%b-%Y %H:%M'),
-                    'categories': categories.split(',')
+                    'categories': new_categories
                 }
+
+                # Save the file
+                file_name = f"{new_document['hashValue']}{new_document['fileExt']}"
+                # Reset the file stream position again before saving
+                file.stream.seek(0)  # Move the stream pointer back to the beginning
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_name))  # Save with new file name
+
+                # insert the document into the database
                 documents_table.insert(new_document)
                 # insert the document into the trie
                 from app import trieUsersMap
@@ -135,11 +144,13 @@ def upload_file():
                 document = TrieDocument(new_document['id'], new_document['title'], new_document['hashValue'],
                                         new_document['fileExt'])
                 trie_user.trie.insert(document)
-                # Save the file
-                file_name = f"{new_document['hashValue']}{new_document['fileExt']}"
-                # Reset the file stream position again before saving
-                file.stream.seek(0)  # Move the stream pointer back to the beginning
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_name))  # Save with new file name
+
+                # update categories
+                existing_categories = db.table('categories').get(doc_id=1)['data']
+                existing_categories.extend(new_categories)
+                updated_categories = list(set(existing_categories))  # remove duplicates
+                db.table('categories').update({'data': updated_categories}, doc_ids=[1])
+
                 return {'message': 'File successfully uploaded', 'document': new_document}, 200
     except Exception as e:
         return {'message': str(e)}, 500

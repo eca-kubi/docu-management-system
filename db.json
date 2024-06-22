@@ -3,37 +3,38 @@
         "1": {
             "id": "1",
             "data": [
-                "Personal",
-                "Rejected",
-                "Education",
-                "Work",
-                "Pending",
-                "Pending Review",
-                "Monthly Report",
-                "Final",
-                "Review",
-                "Attitude",
-                "Feedback Received",
                 "Miscellaneous",
-                "Archive",
-                "Urgent",
-                "Health",
-                "Finance",
-                "Daily Report",
-                "Confidential",
-                "Weekly Report",
-                "Pending Approval",
-                "Approved",
-                "Completed",
-                "Fan",
+                "Review",
                 "Culture",
-                "In Progress",
-                "Legal",
-                "School",
-                "Draft",
+                "International",
                 "Important",
+                "Feedback Received",
+                "Archive",
+                "Pending",
+                "Stationary",
+                "Weekly Report",
+                "School",
+                "Monthly Report",
+                "Confidential",
+                "Health",
+                "Pending Approval",
+                "In Progress",
+                "Finance",
                 "Political",
-                "Stationary"
+                "Draft",
+                "Urgent",
+                "Personal",
+                "Final",
+                "Approved",
+                "Work",
+                "Daily Report",
+                "Education",
+                "Attitude",
+                "Fan",
+                "Rejected",
+                "Legal",
+                "Pending Review",
+                "Completed"
             ]
         }
     },
@@ -142,6 +143,20 @@
             "categories": [
                 "Fan",
                 "Final"
+            ]
+        },
+        "6": {
+            "id": "011231ac-4643-4365-aee6-f715ba8acbc1",
+            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "author": "Connor Stroman",
+            "title": "Title 6",
+            "hashValue": "a30c5a4bf7a1dd8c0059e68e04204a4735abfe6c79432a470256164e0a82bc96",
+            "fileExt": ".rdp",
+            "fileType": ".rdp",
+            "uploadDate": "2024-06-22T06:59:11.478068",
+            "uploadDateReadable": "22-Jun-2024 06:59",
+            "categories": [
+                "International"
             ]
         }
     }
