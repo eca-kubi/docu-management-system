@@ -19,7 +19,9 @@ const FileCardGrid = ({ itemDatasource, gridClass = '', allCategories, onCardSel
             await itemDatasource.load();
             setItems(itemDatasource.items());
         };
-        loadData();
+        loadData().then(() => {
+            console.log("Data loaded successfully"); // Debugging statement
+        });
     }, [itemDatasource]);
 
     const combinedAndSortedCategories = useMemo(() => {

@@ -138,7 +138,6 @@ const UploadDocumentForm = ({handleFormSubmit}) => {
                 <Form
                     formData={formData}
                     ref={formRef}
-                    //onFieldDataChanged={onFieldDataChanged}
                     onInitialized={onFormInitialized}
                     showRequiredMark={true}
                     showValidationSummary={true}
@@ -147,7 +146,6 @@ const UploadDocumentForm = ({handleFormSubmit}) => {
                     <ValidationSummary
                         ref={validationSummaryRef}
                         hoverStateEnabled={true}
-                        //onItemClick={handleValidationSummaryItemClick}
                     />
                     <SimpleItem
                         name="title"
@@ -236,7 +234,6 @@ const UploadDocumentForm = ({handleFormSubmit}) => {
                 icon={'upload'}
                 label={'Upload'}
                 onClick={() => {
-                    //setPopupVisible(true)
                     popupRef.current.instance.show();
                 }}
             />

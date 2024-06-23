@@ -16,7 +16,7 @@ import axios from "axios";
 
 const Documents = () => {
     const [documents, setDocuments] = useState([]);
-    const [, setSelectedDocIds] = useState([]);
+    const [setSelectedDocIds] = useState([]);
     const [isLoadPanelVisible, setIsLoadPanelVisible] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
     const [pages, setPages] = useState([1]);
@@ -70,12 +70,15 @@ const Documents = () => {
                 return prevState.filter((docId) => docId !== id);
             }
         });
-    }, []);
+    }, [setSelectedDocIds]);
 
     const documentStore = useMemo(() => {
-        console.log('Documents:', documents); // Debugging statement
+        const filteredDocuments = selectedCategories.length === 0
+            ? documents
+            : documents.filter(doc => selectedCategories.some(cat => doc.categories.includes(cat)));
+
         return new ArrayStore({
-            data: documents,
+            data: filteredDocuments,
             key: 'id',
             onLoading: () => {
                 setIsLoadPanelVisible(true);
@@ -84,10 +87,10 @@ const Documents = () => {
                 setIsLoadPanelVisible(false);
             }
         });
-    }, [documents]);
+    }, [documents, selectedCategories]);
 
     const itemDatasource = useMemo(() => {
-        const ds = new DataSource({
+        return new DataSource({
             store: documentStore,
             key: 'id',
             sort: {selector: 'uploadDate', desc: true},
@@ -98,20 +101,12 @@ const Documents = () => {
                 setIsLoadPanelVisible(isLoading);
             }
         });
-        console.log('DataSource initialized:', ds);
-        return ds;
     }, [documentStore, pageSize]);
 
     function Field() {
         return <TextBox placeholder={totalPages ? "Page " + (itemDatasource.pageIndex() + 1) + " of " + totalPages : ""}
                         width={'100%'}/>;
     }
-
-/*    const filterByCategories = useCallback((doc) => {
-        return doc.categories.some((category) => {
-            return _.isEmpty(selectedCategories) || selectedCategories.includes(category);
-        });
-    }, [selectedCategories]);*/
 
     const listDataSource = useMemo(() => {
         return new DataSource({
@@ -184,6 +179,13 @@ const Documents = () => {
         setAllCategories(categories);
     }, [categories]);
 
+    useEffect(() => {
+        if (itemDatasource) {
+            itemDatasource.load();
+        }
+    }, [selectedCategories, itemDatasource]);
+
+
     const handleFormSubmit = useCallback(async (formData) => {
         console.log('Handle submit: ', formData);
 
@@ -247,11 +249,7 @@ const Documents = () => {
                     onValueChanged={(e) => {
                         setSelectedCategories(e.value);
                     }}
-                    dropDownOptions={
-                        {
-                            hideOnOutsideClick: true,
-                        }
-                    }
+                    dropDownOptions={{hideOnOutsideClick: true}}
                 />
             </div>
             <hr className='mb-2 border-dashed'/>
