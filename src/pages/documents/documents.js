@@ -16,61 +16,47 @@ import axios from "axios";
 
 const Documents = () => {
     const [documents, setDocuments] = useState([]);
+    const [gridItems, setGridItems] = useState([]);
     const [setSelectedDocIds] = useState([]);
     const [isLoadPanelVisible, setIsLoadPanelVisible] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
     const [pages, setPages] = useState([1]);
     const [totalPages, setTotalPages] = useState(pages.length);
-    const [pageSize] = useState(9);
+    const [pageSize] = useState(6);
     const tagRef = React.createRef();
     const {user} = useAuth();
     const [selectedCategories, setSelectedCategories] = useState([]);
-    const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
     const [searchResults, setSearchResults] = useState([]);
     const {mutate: mutateCategories, categories} = useCategories();
-    const [allCategories, setAllCategories] = useState([]);
+    const [allCategories, setAllCategories] = useState(categories);
 
-    const handleCategoryUpdate = useCallback(async (docId, category) => {
-        const newCategories = [...new Set([...category, ...categories])];
-        setAllCategories(newCategories);
-
-        try {
-            const response = await patch(`${process.env.REACT_APP_API_URL}/documents/${docId}`, {categories: category});
-            if (response.isOk) {
-                console.log('Document category updated successfully.');
-                setLastUpdateTime(new Date());
-            } else {
-                console.log('Failed to update document category.');
-                notify('Failed to update document category.', 'error', 3000);
+    const loadDocuments = useCallback(() => {
+        const documentLoader = async () => {
+            try {
+                const response = await get(`${process.env.REACT_APP_API_URL}/users/${user.id}/documents`);
+                if (response.isOk) {
+                    console.log('Fetched documents:', response.data); // Debugging statement
+                    setDocuments(response.data);
+                } else {
+                    console.log('Failed to fetch documents from server.');
+                    notify('Failed to fetch documents from server.', 'error', 6000);
+                }
+            } catch (e) {
+                console.log('Failed to fetch documents from server.', e);
+                notify('Failed to fetch documents from server.', 'error', 6000);
             }
+        };
 
-            await mutateCategories(async (currentCategories) => {
-                return [...new Set([...category, ...currentCategories])];
-            });
+        documentLoader().then(() => console.log('Documents loaded successfully.'));
+    }, [user.id]);
 
-            const categoryResponse = await post(`${process.env.REACT_APP_API_URL}/categories`, {categories: category});
-            if (categoryResponse.isOk) {
-                console.log('Categories updated successfully.');
-                await mutateCategories(categoryResponse.data);
-            } else {
-                console.log('Failed to update categories.');
-                notify('Failed to update categories.', 'error', 3000);
-            }
-        } catch (e) {
-            console.log('Failed to update document category.', e);
-            notify('Failed to update document category.', 'error', 3000);
-        }
-    }, [categories, mutateCategories]);
+    useEffect(() => {
+        loadDocuments();
+    }, [loadDocuments]);
 
-    const handleDocumentSelection = useCallback((id, isDocSelected) => {
-        setSelectedDocIds((prevState) => {
-            if (isDocSelected) {
-                return [...prevState, id];
-            } else {
-                return prevState.filter((docId) => docId !== id);
-            }
-        });
-    }, [setSelectedDocIds]);
+    useEffect(() => {
+        setAllCategories(categories);
+    }, [categories]);
 
     const documentStore = useMemo(() => {
         const filteredDocuments = selectedCategories.length === 0
@@ -85,6 +71,7 @@ const Documents = () => {
             },
             onLoaded: () => {
                 setIsLoadPanelVisible(false);
+                setGridItems(filteredDocuments);
             }
         });
     }, [documents, selectedCategories]);
@@ -103,6 +90,22 @@ const Documents = () => {
         });
     }, [documentStore, pageSize]);
 
+    useEffect(() => {
+        const loadDataSource = async () => {
+            itemDatasource.load().then(() => {
+                console.log("Total count:", itemDatasource.totalCount()); // Check if totalCount is as expected
+                setTotalPages(Math.ceil(itemDatasource.totalCount() / pageSize));
+                setPages(Array.from({length: Math.ceil(itemDatasource.totalCount() / pageSize)}, (_, i) => i + 1));
+                itemDatasource.pageIndex(0)
+                setCurrentPage(0)
+                setGridItems(itemDatasource.items());
+            });
+        };
+        loadDataSource().then(() => {
+            console.log("Datasource loaded successfully"); // Debugging statement
+        });
+    }, [itemDatasource, pageSize]);
+
     function Field() {
         return <TextBox placeholder={totalPages ? "Page " + (itemDatasource.pageIndex() + 1) + " of " + totalPages : ""}
                         width={'100%'}/>;
@@ -116,6 +119,55 @@ const Documents = () => {
             })
         });
     }, [searchResults]);
+    
+    const categoryDataSource = useMemo(() => {
+        return [...new Set([...selectedCategories, ..._.sortBy(allCategories)])]
+    }, [allCategories, selectedCategories]);
+
+    const handleCategoryUpdate = useCallback(async (docId, category) => {
+        //const newCategories = [...new Set([...category, ...categories])];
+        //setAllCategories(newCategories);
+        try {
+            const response = await patch(`${process.env.REACT_APP_API_URL}/documents/${docId}`, {categories: category});
+            if (response.isOk) {
+                console.log('Document category updated successfully.');
+                loadDocuments();
+            } else {
+                console.log('Failed to update document category.');
+                notify('Failed to update document category.', 'error', 3000);
+            }
+
+            /*            await mutateCategories(async (currentCategories) => {
+                            const newCategories = [...new Set([...category, ...currentCategories])];
+                            setAllCategories(newCategories);
+                            return newCategories;
+                        });*/
+
+            const categoryResponse = await post(`${process.env.REACT_APP_API_URL}/categories`, {categories: category});
+            if (categoryResponse.isOk) {
+                console.log('Categories updated successfully.');
+                const newCategories = [...new Set([...category, ...categories])];
+                setAllCategories(newCategories);
+                await mutateCategories(newCategories);
+            } else {
+                console.log('Failed to update categories.');
+                notify('Failed to update categories.', 'error', 3000);
+            }
+        } catch (e) {
+            console.log('Failed to update document category.', e);
+            notify('Failed to update document category.', 'error', 3000);
+        }
+    }, [categories, loadDocuments, mutateCategories]);
+
+    const handleDocumentSelection = useCallback((id, isDocSelected) => {
+        setSelectedDocIds((prevState) => {
+            if (isDocSelected) {
+                return [...prevState, id];
+            } else {
+                return prevState.filter((docId) => docId !== id);
+            }
+        });
+    }, [setSelectedDocIds]);
 
     const handleSearchResults = useCallback((data) => {
         console.log('Search results:', data);
@@ -150,41 +202,6 @@ const Documents = () => {
             );
         }
     }), [handleDelete, handleDownload, listDataSource]);
-
-    const refreshDocuments = useCallback(() => {
-        const fetchUpdatedDocuments = async () => {
-            try {
-                const response = await get(`${process.env.REACT_APP_API_URL}/users/${user.id}/documents`);
-                if (response.isOk) {
-                    console.log('Fetched documents:', response.data); // Debugging statement
-                    setDocuments(response.data);
-                } else {
-                    console.log('Failed to fetch updated documents from server.');
-                    notify('Failed to fetch updated documents from server.', 'error', 6000);
-                }
-            } catch (e) {
-                console.log('Failed to fetch updated documents from server.', e);
-                notify('Failed to fetch updated documents from server.', 'error', 6000);
-            }
-        };
-
-        fetchUpdatedDocuments().then(() => console.log('Updated documents fetched successfully.'));
-    }, [user.id]);
-
-    useEffect(() => {
-        refreshDocuments();
-    }, [lastUpdateTime, refreshDocuments]);
-
-    useEffect(() => {
-        setAllCategories(categories);
-    }, [categories]);
-
-    useEffect(() => {
-        if (itemDatasource) {
-            itemDatasource.load();
-        }
-    }, [selectedCategories, itemDatasource]);
-
 
     const handleFormSubmit = useCallback(async (formData) => {
         console.log('Handle submit: ', formData);
@@ -242,7 +259,7 @@ const Documents = () => {
                     acceptCustomValue={true}
                     stylingMode={"filled"}
                     placeholder={'Filter by category'}
-                    dataSource={[...new Set([...selectedCategories, ..._.sortBy(allCategories)])]}
+                    dataSource={categoryDataSource}
                     value={selectedCategories}
                     searchEnabled={true}
                     showSelectionControls={true}
@@ -267,7 +284,9 @@ const Documents = () => {
                             const page = isNull(e.selectedItem) ? itemDatasource.pageIndex() : e.selectedItem - 1;
                             setCurrentPage(page);
                             itemDatasource.pageIndex(page);
-                            itemDatasource.load();
+                            itemDatasource.load().then(
+                                setGridItems(itemDatasource.items())
+                            )
                         }
                     }
                     buttons={[
@@ -280,7 +299,9 @@ const Documents = () => {
                                     if (currentPage > 0) {
                                         setCurrentPage(currentPage - 1);
                                         itemDatasource.pageIndex(currentPage - 1);
-                                        itemDatasource.load();
+                                        itemDatasource.load().then(
+                                            setGridItems(itemDatasource.items())
+                                        )
                                     }
                                 },
                                 disabled: currentPage === 0 || totalPages === 0
@@ -295,7 +316,9 @@ const Documents = () => {
                                     if (currentPage < totalPages) {
                                         setCurrentPage(currentPage + 1);
                                         itemDatasource.pageIndex(currentPage + 1);
-                                        itemDatasource.load();
+                                        itemDatasource.load().then(
+                                            setGridItems(itemDatasource.items())
+                                        )
                                     }
                                 },
                                 disabled: currentPage + 1 === totalPages || totalPages === 0
@@ -309,11 +332,12 @@ const Documents = () => {
                 {/* Just spacing between the search box and the document grid */}
             </div>
             <div className='card-grid h-100' id="#cardGrid">
-                <FileCardGrid itemDatasource={itemDatasource}
-                              allCategories={allCategories}
-                              onCategoryUpdate={handleCategoryUpdate}
-                              onCardSelected={handleDocumentSelection}
-                              refreshDocuments={refreshDocuments}
+                <FileCardGrid
+                    items={gridItems}
+                    allCategories={allCategories}
+                    onCategoryUpdate={handleCategoryUpdate}
+                    onCardSelected={handleDocumentSelection}
+                    onItemDeleted={loadDocuments}
                 />
             </div>
             <LoadPanel container={'.card-grid'} visible={isLoadPanelVisible}/>

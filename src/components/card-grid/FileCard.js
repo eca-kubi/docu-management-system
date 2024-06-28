@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilePdf, faFileAudio, faFileWord, faFilePowerpoint, faFile, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
-import { Dropdown } from 'react-bootstrap';
-import { TagBox } from 'devextreme-react';
+import React, {useState} from 'react';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {
+    faEllipsisV,
+    faFile,
+    faFileAudio,
+    faFilePdf,
+    faFilePowerpoint,
+    faFileWord
+} from '@fortawesome/free-solid-svg-icons';
+import {Dropdown} from 'react-bootstrap';
+import {TagBox} from 'devextreme-react';
+import {confirm} from 'devextreme/ui/dialog';
 import axios from 'axios';
 import './FileCard.scss';
+import _ from "lodash";
 
 const FileCard = ({
                       id, fileType, title, defaultCategorySelection, uploadDate, allCategories,
@@ -44,18 +53,23 @@ const FileCard = ({
     };
 
     const handleDelete = async () => {
-        try {
-            const response = await axios.delete(`${process.env.REACT_APP_API_URL}/delete/${id}`);
-            if (response.status === 200) {
-                console.log('File successfully deleted');
-                if (deleteHandler) {
-                    deleteHandler(id);
+        const dialogResult = await confirm('Are you sure you want to delete this file?', 'Delete File');
+        if (dialogResult) {
+            try {
+                const response = await axios.delete(`${process.env.REACT_APP_API_URL}/delete/${id}`);
+                if (response.status === 200) {
+                    console.log('File successfully deleted');
+                    if (deleteHandler) {
+                        deleteHandler(id);
+                    }
                 }
+            } catch (error) {
+                console.error('Error deleting the file', error);
             }
-        } catch (error) {
-            console.error('Error deleting the file', error);
         }
     };
+
+    const sortedItems = [...new Set([...defaultCategorySelection, ..._.sortBy(allCategories)])]
 
     return (
         <div key={id} className="col mb-2">
@@ -68,10 +82,10 @@ const FileCard = ({
                        id={`checkbox-${id}`}
                 />
                 <div className="card-body">
-                    <FontAwesomeIcon icon={getFileIcon(fileType)} size="3x" />
+                    <FontAwesomeIcon icon={getFileIcon(fileType)} size="3x"/>
                     <h5 className="card-title mt-2">{title}</h5>
                     <TagBox
-                        items={allCategories}
+                        items={sortedItems}
                         labelMode={"floating"}
                         label={"categories"}
                         stylingMode={"underlined"}
@@ -100,8 +114,8 @@ const FileCard = ({
                         <small className="text-muted">Uploaded on {uploadDate}</small>
                         <Dropdown>
                             <Dropdown.Toggle variant="light" id="card-actions" className={"custom-dropdown-toggle"}
-                                             style={{ background: 'none', border: 'none' }}>
-                                <FontAwesomeIcon icon={faEllipsisV} />
+                                             style={{background: 'none', border: 'none'}}>
+                                <FontAwesomeIcon icon={faEllipsisV}/>
                             </Dropdown.Toggle>
                             <Dropdown.Menu>
                                 <Dropdown.Item onClick={handleDownload}>Download</Dropdown.Item>

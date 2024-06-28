@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo } from "react";
 import FileCard from './FileCard';
 
-const FileCardGrid = ({ itemDatasource, gridClass = '', allCategories, onCardSelected, onCategoryUpdate, refreshDocuments }) => {
-    const [items, setItems] = useState([]);
+const FileCardGrid = ({ items, allCategories, onCardSelected,onItemDeleted, onCategoryUpdate, gridClass='' }) => {
 
     const handleCardSelection = useCallback((id, isCardSelected) => {
         console.log(`Card with id ${id} is ${isCardSelected ? 'selected' : 'unselected'}`);
@@ -11,18 +10,8 @@ const FileCardGrid = ({ itemDatasource, gridClass = '', allCategories, onCardSel
 
     const deleteHandler = useCallback((id) => {
         console.log(`File with id ${id} deleted`);
-        refreshDocuments();
-    }, [refreshDocuments]);
-
-    useEffect(() => {
-        const loadData = async () => {
-            await itemDatasource.load();
-            setItems(itemDatasource.items());
-        };
-        loadData().then(() => {
-            console.log("Data loaded successfully"); // Debugging statement
-        });
-    }, [itemDatasource]);
+        onItemDeleted();
+    }, [onItemDeleted]);
 
     const combinedAndSortedCategories = useMemo(() => {
         return Array.from(new Set([...items.flatMap(item => item.categories), ...(allCategories || [])])).sort((a, b) => a.localeCompare(b));
