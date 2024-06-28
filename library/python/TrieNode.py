@@ -17,11 +17,17 @@ class TrieNode:
     --------
     insert(self, document)
         Inserts a document into the Trie
+
+    remove(self, document)
+        Removes a document from the Trie
+
     search(self, prefix)
         Searches for documents with a given prefix
+
     _get_words(self, node)
         Helper method to get all documents associated with a node
     """
+
     def __init__(self, is_root=False):
         self.children = {}
         self.is_end_of_word = False
@@ -45,6 +51,24 @@ class TrieNode:
             node = node.children[char]
         node.is_end_of_word = True
         node.document = document
+
+    def remove(self, document):
+        """
+        Removes a document from the Trie
+
+        Parameters:
+        -----------
+        document : Document
+            a Document object representing the document to be removed
+        """
+        node = self
+        word = document.title.lower().strip()
+        for char in word:
+            if char not in node.children:
+                return
+            node = node.children[char]
+        node.is_end_of_word = False
+        node.document = None
 
     def search(self, prefix):
         """

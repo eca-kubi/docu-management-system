@@ -193,4 +193,9 @@ def delete_file(file_id):
 
     documents_table.remove(Document.id == file_id)
 
+    # remove the document from the trie
+    from app import trieUsersMap
+    trie_user = trieUsersMap.get(document['userId'])
+    trie_user.trie.remove(TrieDocument(document['id'], document['title'], document['hashValue'], document['fileExt']))
+
     return jsonify({'message': 'File successfully deleted'}), 200

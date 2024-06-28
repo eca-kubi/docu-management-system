@@ -3,38 +3,54 @@
         "1": {
             "id": "1",
             "data": [
-                "Miscellaneous",
-                "Review",
-                "Culture",
-                "International",
-                "Important",
-                "Feedback Received",
-                "Archive",
-                "Pending",
-                "Stationary",
-                "Weekly Report",
+                "Approved",
+                "Personal",
+                "Fan",
+                "Intern",
+                "Peace",
+                "Equality",
+                "Legal",
+                "Super",
                 "School",
-                "Monthly Report",
-                "Confidential",
-                "Health",
-                "Pending Approval",
-                "In Progress",
-                "Finance",
+                "Mandem",
                 "Political",
+                "Aqua",
+                "Archive",
+                "Important",
+                "Pydant",
+                "Pending Approval",
+                "Education",
+                "Clasified",
+                "Review",
                 "Draft",
                 "Urgent",
-                "Personal",
+                "In Progress",
+                "Culture",
+                "Completed",
+                "Pending",
+                "Likee",
+                "Zero-out",
+                "Miscellaneous",
                 "Final",
-                "Approved",
-                "Work",
+                "Hackathon",
+                "Stationary",
                 "Daily Report",
-                "Education",
-                "Attitude",
-                "Fan",
-                "Rejected",
-                "Legal",
+                "Weekly Report",
+                "Health",
+                "Hacking",
+                "Monthly Report",
+                "Fragile",
+                "Confidential",
+                "International",
+                "College",
                 "Pending Review",
-                "Completed"
+                "Attitude",
+                "Grocery",
+                "Feedback Received",
+                "Work",
+                "Finance",
+                "Action",
+                "Rejected"
             ]
         }
     },
@@ -89,20 +105,6 @@
             ]
         },
         "2": {
-            "id": "310ad0bb-5b12-4134-82b7-48e93aff136d",
-            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
-            "author": "Connor Stroman",
-            "title": "Title 2",
-            "hashValue": "626ca01dca59f69fc4faf6321f66197db0997a23d08c18c24988eca6858ec1f1",
-            "fileExt": ".xlsx",
-            "fileType": ".xlsx",
-            "uploadDate": "2024-06-21T18:35:38.113754",
-            "uploadDateReadable": "21-Jun-2024 18:35",
-            "categories": [
-                "Approved"
-            ]
-        },
-        "3": {
             "id": "2cd8d5db-a42c-4c40-b7ca-993a739e05fe",
             "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
             "author": "Connor Stroman",
@@ -113,24 +115,12 @@
             "uploadDate": "2024-06-21T18:50:14.025801",
             "uploadDateReadable": "21-Jun-2024 18:50",
             "categories": [
-                "Education"
+                "Education",
+                "Archive",
+                "Attitude"
             ]
         },
-        "4": {
-            "id": "97e1bfb5-e3f5-4104-8a97-3c7833533dcf",
-            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
-            "author": "Connor Stroman",
-            "title": "Title 4",
-            "hashValue": "071d1489a05d2c022c154105eaf29f24a95bece62d5114481ef1542ed3aa94e7",
-            "fileExt": ".xlsx",
-            "fileType": ".xlsx",
-            "uploadDate": "2024-06-21T18:59:40.036887",
-            "uploadDateReadable": "21-Jun-2024 18:59",
-            "categories": [
-                "Hacking"
-            ]
-        },
-        "5": {
+        "3": {
             "id": "d83c1a5e-584d-41d6-8185-8ecfcf631f59",
             "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
             "author": "Connor Stroman",
@@ -142,21 +132,26 @@
             "uploadDateReadable": "21-Jun-2024 19:04",
             "categories": [
                 "Fan",
-                "Final"
+                "Final",
+                "Fragile"
             ]
         },
-        "6": {
-            "id": "011231ac-4643-4365-aee6-f715ba8acbc1",
+        "5": {
+            "id": "a0568155-6575-4cc1-ac06-8cfe93e08fa1",
             "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
             "author": "Connor Stroman",
-            "title": "Title 6",
-            "hashValue": "a30c5a4bf7a1dd8c0059e68e04204a4735abfe6c79432a470256164e0a82bc96",
-            "fileExt": ".rdp",
-            "fileType": ".rdp",
-            "uploadDate": "2024-06-22T06:59:11.478068",
-            "uploadDateReadable": "22-Jun-2024 06:59",
+            "title": "Title 7",
+            "hashValue": "df920dd4b7610568a1f97b3a4f4a21492653ea45732f575c0c0a15986e20a22b",
+            "fileExt": ".xlsx",
+            "fileType": ".xlsx",
+            "uploadDate": "2024-06-23T11:12:55.550778",
+            "uploadDateReadable": "23-Jun-2024 11:12",
             "categories": [
-                "International"
+                "Approved",
+                "Equality",
+                "Hackathon",
+                "Peace",
+                "Grocery"
             ]
         }
     }
