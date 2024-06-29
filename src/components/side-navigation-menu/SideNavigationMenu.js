@@ -4,7 +4,6 @@ import {navigation} from '../../app-navigation';
 import {useNavigation} from '../../contexts/navigation';
 import {useScreenSize} from '../../utils/media-query';
 import './SideNavigationMenu.scss';
-//import DocumentUploader from "../document-uploader/DocumentUploader";
 import * as events from 'devextreme/events';
 import _ from "lodash";
 
@@ -15,7 +14,6 @@ export default React.forwardRef(function SideNavigationMenu(props, ref) {
         openMenu,
         compactMode,
         onMenuReady,
-        //getTreeViewRef,
         setSelectedItem
     } = props;
 
@@ -48,24 +46,11 @@ export default React.forwardRef(function SideNavigationMenu(props, ref) {
     }, [openMenu]);
 
     useEffect(() => {
-        const treeView = treeViewRef.current && treeViewRef.current.instance;
+        const treeView = treeViewRef?.current && treeViewRef.current.instance;
         if (!treeView) {
             return;
         }
-
-        // Merge treeViewRef items with navigation items
-/*        const mergedItems = treeView.option('items').map((item) => {
-            const navigationItem = items.find((navigationItem) =>
-                navigationItem.key === item.keyFn());
-            return {
-                ...item,
-                ...navigationItem
-            };
-        } );*/
-        //treeView.option('items', mergedItems);
-
         console.log(currentPath)
-        //getTreeViewRef(treeViewRef)
         const id = _.trimStart(currentPath, ['/']);
 
 try {
@@ -101,23 +86,13 @@ try {
 
     }, [compactMode]);
 
-/*    const renderDocumentUploader = useCallback(({dropZoneWidth}) => {
-        return (
-            <DocumentUploader
-                dropZoneWidth={dropZoneWidth}
-            />
-        );
-    }, []);*/
-
     const handleOnItemClick = useCallback((e) => {
         selectedItemChanged(e);
-        //setSelectedPath(e.itemData?.path);
         setSelectedPath(e.itemData.keyFn());
         setSelectedItem(e.itemData);
     }, [selectedItemChanged, setSelectedItem]);
 
     const handleOnItemSelectionChanged = useCallback((e) => {
-        //setSelectedPath(e.itemData?.path);
         setSelectedPath(e.itemData.keyFn());
         setSelectedItem(e.itemData);
     }, [setSelectedItem]);
@@ -132,7 +107,6 @@ try {
                 <TreeView
                     key={compactMode} // Add this line
                     keyExpr={'keyFn'}
-                   // items={items}
                     ref={treeViewRef}
                     selectionMode={'single'}
                     focusStateEnabled={false}
@@ -144,7 +118,6 @@ try {
                 >
                     {
                         items.map((item) =>
-                           // item.key !== 'upload-document' ?
                                 (
                                     <Item keyFn={() => item.key}
                                         key={item.key}
@@ -155,14 +128,7 @@ try {
                                         items={item?.items}
                                         visible={toggleItemVisibility(item)}
                                     />
-                                ) /*: (
-                                    <Item keyFn={() => item.key}
-                                        key={item.key}
-                                        id={item.key}
-                                        component={() => renderDocumentUploader({dropZoneWidth: 250})}
-                                        visible={toggleItemVisibility(item)}
-                                    />
-                                )*/
+                                )
                         )
                     }
                 </TreeView>

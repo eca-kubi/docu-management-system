@@ -1,9 +1,10 @@
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import SelectBox, {DropDownOptions} from 'devextreme-react/select-box';
 import FileCardGrid from "../../components/card-grid/FileCardGrid";
 import {useAuth} from "../../contexts/auth";
 import {get, patch, post} from "../../utils/api";
 import notify from 'devextreme/ui/notify';
+import {confirm} from 'devextreme/ui/dialog';
 import {Button, TagBox, TextBox} from "devextreme-react";
 import LoadPanel from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
@@ -29,6 +30,7 @@ const Documents = () => {
     const [searchResults, setSearchResults] = useState([]);
     const {mutate: mutateCategories, categories} = useCategories();
     const [allCategories, setAllCategories] = useState(categories);
+    const listRef = useRef();
 
     const loadDocuments = useCallback(() => {
         const documentLoader = async () => {
@@ -115,18 +117,16 @@ const Documents = () => {
         return new DataSource({
             store: new ArrayStore({
                 data: _.sortBy(searchResults, 'title'),
-                key: 'hash'
+                key: 'id'
             })
         });
     }, [searchResults]);
-    
+
     const categoryDataSource = useMemo(() => {
         return [...new Set([...selectedCategories, ..._.sortBy(allCategories)])]
     }, [allCategories, selectedCategories]);
 
     const handleCategoryUpdate = useCallback(async (docId, category) => {
-        //const newCategories = [...new Set([...category, ...categories])];
-        //setAllCategories(newCategories);
         try {
             const response = await patch(`${process.env.REACT_APP_API_URL}/documents/${docId}`, {categories: category});
             if (response.isOk) {
@@ -136,12 +136,6 @@ const Documents = () => {
                 console.log('Failed to update document category.');
                 notify('Failed to update document category.', 'error', 3000);
             }
-
-            /*            await mutateCategories(async (currentCategories) => {
-                            const newCategories = [...new Set([...category, ...currentCategories])];
-                            setAllCategories(newCategories);
-                            return newCategories;
-                        });*/
 
             const categoryResponse = await post(`${process.env.REACT_APP_API_URL}/categories`, {categories: category});
             if (categoryResponse.isOk) {
@@ -174,18 +168,48 @@ const Documents = () => {
         setSearchResults(data);
     }, []);
 
-    const handleDownload = useCallback(({event}, id) => {
-        console.log('Download document with id:', id);
+    const handleDownload = useCallback(async (event, id, title, fileType) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/download/${id}`, {
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', title + fileType); // Add file extension to title for download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading the file', error);
+        }
         event.stopPropagation();
     }, []);
 
-    const handleDelete = useCallback(({event}, id) => {
-        console.log('Delete document with id:', id);
+    const handleDelete = useCallback(async (event, id) => {
+        const dialogResult = await confirm('Are you sure you want to delete this file?', 'Delete File');
+        if (dialogResult) {
+            try {
+                const response = await axios.delete(`${process.env.REACT_APP_API_URL}/delete/${id}`);
+                if (response.status === 200) {
+                    console.log('File successfully deleted');
+                    loadDocuments();
+                    const store = listRef.current?.instance.getDataSource().store();
+                    store.remove(id);
+                    listRef.current?.instance.reload();
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error deleting the file', error);
+                return false;
+            }
+        }
         event.stopPropagation();
-    }, []);
+        return true;
+    }, [loadDocuments]);
 
     const listOptions = useMemo(() => ({
-        keyExpr: 'hashValue',
+        keyExpr: 'id',
         displayExpr: 'title',
         dataSource: listDataSource,
         itemRender: (item) => {
@@ -194,8 +218,10 @@ const Documents = () => {
                     <span>{item.title}</span>
                     <div className="group-hover:block action-buttons hidden">
                         <div className="flex gap-2">
-                            <Button onClick={(e) => handleDownload(e, item["hashValue"])} icon='download'/>
-                            <Button onClick={(e) => handleDelete(e, item["hashValue"])} icon='trash'/>
+                            <Button
+                                onClick={({event}) => handleDownload(event, item["id"], item["title"], item["fileExt"])}
+                                icon='download'/>
+                            <Button onClick={({event}) => handleDelete(event, item["id"])} icon='trash'/>
                         </div>
                     </div>
                 </div>
@@ -252,6 +278,7 @@ const Documents = () => {
                                placeholder={'Search by title'}
                                listOptions={listOptions}
                                onSearchResults={handleSearchResults}
+                               ref={listRef}
                 />
                 <TagBox
                     ref={tagRef}
@@ -337,7 +364,8 @@ const Documents = () => {
                     allCategories={allCategories}
                     onCategoryUpdate={handleCategoryUpdate}
                     onCardSelected={handleDocumentSelection}
-                    onItemDeleted={loadDocuments}
+                    onItemDeleted={handleDelete}
+                    onItemDownload={handleDownload}
                 />
             </div>
             <LoadPanel container={'.card-grid'} visible={isLoadPanelVisible}/>

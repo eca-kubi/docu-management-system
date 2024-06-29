@@ -1,36 +1,37 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {forwardRef, useCallback, useEffect, useRef, useState} from 'react';
 import {List, Popover, TextBox} from 'devextreme-react';
 import _ from 'lodash';
 import "./AutoSearchBox.scss";
 import {useAuth} from "../../contexts/auth";
-const AutoSearchBox = ({
+
+const AutoSearchBox = forwardRef(({
                            placeholder = 'Search',
                            className = '',
                            listOptions = {},
                            onSearchResults = (result) => {
                                console.log(result)
                            }
-                       }) => {
+                       }, listRef ) => {
     const [inputValue, setInputValue] = useState('');
     const [textBoxWidth, setTextBoxWidth] = useState(0);
     const [popupVisible, setPopupVisible] = useState(false);
     const popoverRef = useRef(null);
-    const listRef = useRef(null);
+    //const listRef = useRef(null);
     const textBoxRef = useRef(null);
-    const [isItemSelected, setIsItemSelected] = useState(false);
-    const [listHeight, setListHeight] = useState('40px');
+    //const [isItemSelected, setIsItemSelected] = useState(false);
+    //const [listHeight, setListHeight] = useState('40px');
     const [textBoxHasFocus, setTextBoxHasFocus] = useState(false);
-    const [selectedItems, setSelectedItems] = useState([]);
+    //const [selectedItems, setSelectedItems] = useState([]);
     const {user} = useAuth();
 
-    const handleItemSelection = useCallback((e) => {
-        const selectedItems = e.component.option('selectedItems');
-        setSelectedItems(selectedItems);
-        setIsItemSelected(selectedItems.length > 0);
-        // Give focus back to the text box
-        // This is the only workaround I found to let the click event on the text box buttons fire
-        textBoxRef.current.instance.focus();
-    }, []);
+    /*    const handleItemSelection = useCallback((e) => {
+            const selectedItems = e.component.option('selectedItems');
+            setSelectedItems(selectedItems);
+            setIsItemSelected(selectedItems.length > 0);
+            // Give focus back to the text box
+            // This is the only workaround I found to let the click event on the text box buttons fire
+            textBoxRef.current.instance.focus();
+        }, []);*/
 
     const handleOutsideClick = useCallback((e) => {
         // Check if the click is outside the popover
@@ -59,9 +60,9 @@ const AutoSearchBox = ({
         }
     }, []);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSearch = useCallback(_.debounce(async (value) => {
         //const results = value ? generateFakeData(value) : generateFakeData('a')
-        const results = [];
         try {
             const response =
                 await fetch(`${process.env.REACT_APP_API_URL}/search?user_id=${user.id}&title=${value}`)
@@ -71,9 +72,9 @@ const AutoSearchBox = ({
             }
         } catch (e) {
             console.log(e)
-            onSearchResults(results);
+            onSearchResults([]);
         }
-    }, 600), []);
+    }, 600), [onSearchResults, user.id]);
 
     const handleChange = ({event}) => {
         setInputValue(event.target.value);
@@ -97,24 +98,24 @@ const AutoSearchBox = ({
         };
     }, [computeWidth]);
 
-    useEffect(() => {
+/*    useEffect(() => {
         const height = listOptions.dataSource.items().length ? '390px' : '40px'
         setListHeight(height);
         // Update selected items when the data source changes
-    }, [listOptions.dataSource]);
+    }, [listOptions.dataSource]);*/
 
-    useEffect(() => {
-        // Get selectedItems from the listRef instance
-        let selectedItems = [];
-        if (listRef.current) {
-            selectedItems = listRef.current.instance.option('selectedItems');
-        }
-        // Remove items that are no longer in the data source
-        const newSelectedItems =
-            selectedItems.filter((item) => listOptions.dataSource.items()
-                .find(i => i.id === item.id));
-        setSelectedItems(newSelectedItems);
-    }, [listOptions.dataSource]);
+    /*    useEffect(() => {
+            // Get selectedItems from the listRef instance
+            let selectedItems = [];
+            if (listRef.current) {
+                selectedItems = listRef.current.instance.option('selectedItems');
+            }
+            // Remove items that are no longer in the data source
+            const newSelectedItems =
+                selectedItems.filter((item) => listOptions.dataSource.items()
+                    .find(i => i.id === item.id));
+            setSelectedItems(newSelectedItems);
+        }, [listOptions.dataSource]);*/
 
     useEffect(() => {
         // Add the outside click listener when the component mounts
@@ -168,7 +169,7 @@ const AutoSearchBox = ({
                     () => {
                         setTextBoxHasFocus(false)
                     }}
-                buttons={
+                /*buttons={
                     [
                         {
                             name: 'download',
@@ -189,8 +190,6 @@ const AutoSearchBox = ({
                             options: {
                                 icon: 'trash',
                                 onClick: ({event}) => {
-                                    console.log('Delete button clicked')
-                                    console.log(selectedItems)
                                     event.stopPropagation()
                                 },
                                 visible: selectedItems.length > 0
@@ -198,7 +197,7 @@ const AutoSearchBox = ({
                         }
 
                     ]
-                }
+                }*/
             />
             <Popover
                 ref={popoverRef}
@@ -215,13 +214,12 @@ const AutoSearchBox = ({
                 showEvent={'click'}
                 onHidden={
                     () => {
-                        console.log('popover hidden')
                         setPopupVisible(false)
+                        listRef?.current?.instance.unselectAll()
                     }
                 }
                 onShown={
                     () => {
-                        console.log('popover shown')
                         setPopupVisible(true)
                     }
                 }
@@ -240,19 +238,20 @@ const AutoSearchBox = ({
                     elementAttr={
                         {className: 'auto-search-list'}
                     }
-                    height={listHeight}
+                    //height={listHeight}
                     pageLoadMode={'nextButton'}
-                    selectionMode={'all'}
+                    selectionMode={'single'}
                     showSelectionControls={true}
+                    selectByClick={true}
                     dataSource={listOptions.dataSource}
                     itemRender={listOptions.itemRender}
                     noDataText={inputValue ? 'No results found' : 'Start typing to search'}
                     indicateLoading={true}
-                    onSelectionChanged={handleItemSelection}
+                    //onSelectionChanged={handleItemSelection}
                 />
             </Popover>
         </div>
     );
-};
+});
 
 export default AutoSearchBox;

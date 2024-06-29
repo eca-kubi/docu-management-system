@@ -10,14 +10,12 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import {Dropdown} from 'react-bootstrap';
 import {TagBox} from 'devextreme-react';
-import {confirm} from 'devextreme/ui/dialog';
-import axios from 'axios';
 import './FileCard.scss';
 import _ from "lodash";
 
 const FileCard = ({
                       id, fileType, title, defaultCategorySelection, uploadDate, allCategories,
-                      onCardSelected, onCategoryUpdate, deleteHandler
+                      onCardSelected, onCategoryUpdate, downloadHandler, deleteHandler
                   }) => {
     const getFileIcon = (fileType) => {
         const fileTypes = {
@@ -35,40 +33,6 @@ const FileCard = ({
         onCardSelected(id, !isSelected);
     };
 
-    const handleDownload = async () => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/download/${id}`, {
-                responseType: 'blob',
-            });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', title + fileType); // Add file extension to title for download
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error('Error downloading the file', error);
-        }
-    };
-
-    const handleDelete = async () => {
-        const dialogResult = await confirm('Are you sure you want to delete this file?', 'Delete File');
-        if (dialogResult) {
-            try {
-                const response = await axios.delete(`${process.env.REACT_APP_API_URL}/delete/${id}`);
-                if (response.status === 200) {
-                    console.log('File successfully deleted');
-                    if (deleteHandler) {
-                        deleteHandler(id);
-                    }
-                }
-            } catch (error) {
-                console.error('Error deleting the file', error);
-            }
-        }
-    };
-
     const sortedItems = [...new Set([...defaultCategorySelection, ..._.sortBy(allCategories)])]
 
     return (
@@ -76,7 +40,7 @@ const FileCard = ({
             <div className="card h-100 hover:shadow-xl hover:outline hover:outline-red-300
         has-[.item-checkbox:checked]:outline has-[.item-checkbox:checked]:outline-red-700">
                 <input type="checkbox" className="item-checkbox position-absolute top-0 start-0 mt-2 ms-2
-          cursor-pointer"
+          cursor-pointer d-none"
                        onChange={toggleSelection}
                        checked={isSelected}
                        id={`checkbox-${id}`}
@@ -118,8 +82,9 @@ const FileCard = ({
                                 <FontAwesomeIcon icon={faEllipsisV}/>
                             </Dropdown.Toggle>
                             <Dropdown.Menu>
-                                <Dropdown.Item onClick={handleDownload}>Download</Dropdown.Item>
-                                <Dropdown.Item onClick={handleDelete}>Delete</Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={(e) => downloadHandler(e, id, title, fileType)}>Download</Dropdown.Item>
+                                <Dropdown.Item onClick={(e) => deleteHandler(e, id)}>Delete</Dropdown.Item>
                             </Dropdown.Menu>
                         </Dropdown>
                     </div>

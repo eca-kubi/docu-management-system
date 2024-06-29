@@ -1,16 +1,15 @@
 import React, { useCallback, useMemo } from "react";
 import FileCard from './FileCard';
 
-const FileCardGrid = ({ items, allCategories, onCardSelected,onItemDeleted, onCategoryUpdate, gridClass='' }) => {
+const FileCardGrid = ({ items, allCategories, onCardSelected,onItemDeleted, onItemDownload, onCategoryUpdate, gridClass='' }) => {
 
     const handleCardSelection = useCallback((id, isCardSelected) => {
         console.log(`Card with id ${id} is ${isCardSelected ? 'selected' : 'unselected'}`);
         onCardSelected(id, isCardSelected);
     }, [onCardSelected]);
 
-    const deleteHandler = useCallback((id) => {
-        console.log(`File with id ${id} deleted`);
-        onItemDeleted();
+    const deleteHandler = useCallback((e, id) => {
+        onItemDeleted(e, id);
     }, [onItemDeleted]);
 
     const combinedAndSortedCategories = useMemo(() => {
@@ -33,10 +32,11 @@ const FileCardGrid = ({ items, allCategories, onCardSelected,onItemDeleted, onCa
                     onCategoryUpdate={onCategoryUpdate}
                     onCardSelected={handleCardSelection}
                     deleteHandler={deleteHandler}
+                    downloadHandler={onItemDownload}
                 />
             );
         });
-    }, [items, combinedAndSortedCategories, onCategoryUpdate, handleCardSelection, deleteHandler]);
+    }, [items, combinedAndSortedCategories, onCategoryUpdate, handleCardSelection, deleteHandler, onItemDownload]);
 
     return (
         <div className={`row row-cols-1 row-cols-md-3 g-4 overflow-y-auto h-100 ${gridClass}`}>

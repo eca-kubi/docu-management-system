@@ -15,7 +15,6 @@ import { useAuth } from '../../contexts/auth';
 import './LoginForm.scss';
 
 export default function LoginForm() {
-  //const navigate = useNavigate();
   const { signIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const formData = useRef({ email: '', password: '' });
@@ -31,12 +30,6 @@ export default function LoginForm() {
       notify(result.message, 'error', 2000);
     }
   }, [signIn]);
-
-/*
-  const onCreateAccountClick = useCallback(() => {
-    navigate('/create-account');
-  }, [navigate]);
-*/
 
   return (
     <form className={'login-form'} onSubmit={onSubmit}>
@@ -85,13 +78,6 @@ export default function LoginForm() {
             <Link to={'/reset-password'}>Forgot password?</Link>
           </div>
         </Item>
-        {/*<ButtonItem>
-          <ButtonOptions
-            text={'Create an account'}
-            width={'100%'}
-            onClick={onCreateAccountClick}
-          />
-        </ButtonItem>*/}
       </Form>
     </form>
   );
