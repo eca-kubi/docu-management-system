@@ -5,33 +5,20 @@ import "./AutoSearchBox.scss";
 import {useAuth} from "../../contexts/auth";
 
 const AutoSearchBox = forwardRef(({
-                           placeholder = 'Search',
-                           className = '',
-                           listOptions = {},
-                           onSearchResults = (result) => {
-                               console.log(result)
-                           }
-                       }, listRef ) => {
+                                      placeholder = 'Search',
+                                      className = '',
+                                      listOptions = {},
+                                      onSearchResults = (result) => {
+                                          console.log(result)
+                                      }
+                                  }, listRef) => {
     const [inputValue, setInputValue] = useState('');
     const [textBoxWidth, setTextBoxWidth] = useState(0);
     const [popupVisible, setPopupVisible] = useState(false);
     const popoverRef = useRef(null);
-    //const listRef = useRef(null);
     const textBoxRef = useRef(null);
-    //const [isItemSelected, setIsItemSelected] = useState(false);
-    //const [listHeight, setListHeight] = useState('40px');
     const [textBoxHasFocus, setTextBoxHasFocus] = useState(false);
-    //const [selectedItems, setSelectedItems] = useState([]);
     const {user} = useAuth();
-
-    /*    const handleItemSelection = useCallback((e) => {
-            const selectedItems = e.component.option('selectedItems');
-            setSelectedItems(selectedItems);
-            setIsItemSelected(selectedItems.length > 0);
-            // Give focus back to the text box
-            // This is the only workaround I found to let the click event on the text box buttons fire
-            textBoxRef.current.instance.focus();
-        }, []);*/
 
     const handleOutsideClick = useCallback((e) => {
         // Check if the click is outside the popover
@@ -98,25 +85,6 @@ const AutoSearchBox = forwardRef(({
         };
     }, [computeWidth]);
 
-/*    useEffect(() => {
-        const height = listOptions.dataSource.items().length ? '390px' : '40px'
-        setListHeight(height);
-        // Update selected items when the data source changes
-    }, [listOptions.dataSource]);*/
-
-    /*    useEffect(() => {
-            // Get selectedItems from the listRef instance
-            let selectedItems = [];
-            if (listRef.current) {
-                selectedItems = listRef.current.instance.option('selectedItems');
-            }
-            // Remove items that are no longer in the data source
-            const newSelectedItems =
-                selectedItems.filter((item) => listOptions.dataSource.items()
-                    .find(i => i.id === item.id));
-            setSelectedItems(newSelectedItems);
-        }, [listOptions.dataSource]);*/
-
     useEffect(() => {
         // Add the outside click listener when the component mounts
         document.addEventListener('mousedown', handleOutsideClick);
@@ -135,7 +103,6 @@ const AutoSearchBox = forwardRef(({
 
     useEffect(() => {
         if (textBoxHasFocus) {
-            //setPopupVisible(true);
             debouncedSearch(inputValue);
         }
     }, [debouncedSearch, inputValue, textBoxHasFocus]);
@@ -169,35 +136,6 @@ const AutoSearchBox = forwardRef(({
                     () => {
                         setTextBoxHasFocus(false)
                     }}
-                /*buttons={
-                    [
-                        {
-                            name: 'download',
-                            location: 'after',
-                            options: {
-                                icon: 'download',
-                                onClick: ({event}) => {
-                                    console.log('Download button clicked')
-                                    console.log(selectedItems)
-                                    event.stopPropagation()
-                                },
-                                visible: selectedItems.length > 0
-                            }
-                        },
-                        {
-                            name: 'delete',
-                            location: 'after',
-                            options: {
-                                icon: 'trash',
-                                onClick: ({event}) => {
-                                    event.stopPropagation()
-                                },
-                                visible: selectedItems.length > 0
-                            }
-                        }
-
-                    ]
-                }*/
             />
             <Popover
                 ref={popoverRef}
@@ -238,7 +176,6 @@ const AutoSearchBox = forwardRef(({
                     elementAttr={
                         {className: 'auto-search-list'}
                     }
-                    //height={listHeight}
                     pageLoadMode={'nextButton'}
                     selectionMode={'single'}
                     showSelectionControls={true}
@@ -247,7 +184,6 @@ const AutoSearchBox = forwardRef(({
                     itemRender={listOptions.itemRender}
                     noDataText={inputValue ? 'No results found' : 'Start typing to search'}
                     indicateLoading={true}
-                    //onSelectionChanged={handleItemSelection}
                 />
             </Popover>
         </div>
