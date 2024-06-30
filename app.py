@@ -12,7 +12,7 @@ from resources.User import User
 from resources.UserDocument import UserDocument
 from resources.UserDocuments import UserDocuments
 from resources.Users import Users
-from routes import search_bp, download_bp, delete_bp
+from routes import search_bp, download_bp, delete_bp, add_dummy_documents_bp
 from routes import upload_file_bp
 
 
@@ -41,6 +41,7 @@ app.register_blueprint(search_bp)
 app.register_blueprint(upload_file_bp)
 app.register_blueprint(download_bp)
 app.register_blueprint(delete_bp)
+app.register_blueprint(add_dummy_documents_bp)
 
 
 @app.route('/')

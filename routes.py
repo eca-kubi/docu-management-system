@@ -1,8 +1,10 @@
+import hashlib
 import os
+import random
 from datetime import datetime
 
-from flask import Blueprint, send_file, jsonify
-from flask import request
+import requests
+from flask import Blueprint, send_file, jsonify, request
 from flask_cors import cross_origin
 from tinydb import Query
 from werkzeug.utils import secure_filename
@@ -17,6 +19,8 @@ search_bp = Blueprint('search', __name__)
 upload_file_bp = Blueprint('upload_file', __name__)
 download_bp = Blueprint('download', __name__)
 delete_bp = Blueprint('delete', __name__)
+
+add_dummy_documents_bp = Blueprint('add_dummy_documents', __name__)
 
 
 @search_bp.route('/search', methods=['GET'])
@@ -42,6 +46,10 @@ def search():
     return documents_dict, 200
 
 
+def case_insensitive_equals(field_value, comparison_value):
+    return field_value.lower().strip() == comparison_value.lower().strip()
+
+
 @search_bp.route('/validate_title', methods=['GET'])
 def validate_title():
     # Get the user id and document title from the query parameters
@@ -55,7 +63,8 @@ def validate_title():
     # Query the documents table for the given title and user_id
     Document = Query()
     documents_table = db.table('documents')
-    existing_document = documents_table.get((Document.userId == user_id) & (Document.title == title))
+    existing_document = documents_table.get(
+        (Document.userId == user_id) & (Document.title.test(case_insensitive_equals, title)))
 
     if existing_document:
         return {'exists': True, 'message': 'Title already exists'}, 200
@@ -199,3 +208,69 @@ def delete_file(file_id):
     trie_user.trie.remove(TrieDocument(document['id'], document['title'], document['hashValue'], document['fileExt']))
 
     return jsonify({'message': 'File successfully deleted'}), 200
+
+
+@add_dummy_documents_bp.route('/add_dummy_documents', methods=['POST'])
+def add_dummy_documents():
+    data = request.get_json()
+    document_set_size = data.get('document_set_size')
+    user_id = data.get('user_id')
+
+    if not document_set_size or not user_id:
+        return jsonify({'error': 'document_set_size and user_id are required'}), 400
+
+    documents = db.table('documents')
+    users = db.table('users')
+    if not users.contains(Query().id == user_id):
+        return jsonify({'error': 'User ID does not exist'}), 400
+
+    for _ in range(document_set_size):
+        document = generate_random_document(user_id)
+        documents.insert(document)
+        # Trie update logic exists
+        from app import trieUsersMap
+        trie_user = trieUsersMap.get(user_id)
+        document = TrieDocument(document['id'], document['title'], document['hashValue'],
+                                document['fileExt'])
+        trie_user.trie.insert(document)
+
+    return jsonify({'message': f'{document_set_size} documents added for user {user_id}'}), 201
+
+
+# Helper function to generate a unique and meaningful document title
+def generate_unique_title():
+    title_length = random.randint(10, 50)
+    words = []
+
+    while len(' '.join(words)) < title_length:
+        response = requests.get('https://random-word-api.herokuapp.com/word?number=10')
+        if response.status_code == 200:
+            words.extend(response.json())
+        else:
+            break  # Break the loop if the API call fails
+
+    title = ' '.join(words)
+    return title[:title_length]  # Ensure the title is exactly the desired length
+
+
+# Helper function to generate a random document
+# noinspection PyDeprecation
+def generate_random_document(user_id):
+    categories = db.table('categories').all()[0]['data']
+    random_category = random.choice(categories)
+
+    # Create a random document with a unique title
+    document = {
+        'id': Database.generate_id(),
+        'userId': user_id,
+        'author': db.table('users').get(Query().id == user_id)['name'],
+        'title': generate_unique_title(),
+        'hashValue': hashlib.sha256(str(random.random()).encode('utf-8')).hexdigest(),
+        'fileExt': '.txt',
+        'fileType': '.txt',
+        'uploadDate': datetime.utcnow().isoformat(),
+        'uploadDateReadable': datetime.utcnow().strftime('%d-%b-%Y %H:%M'),
+        'categories': [random_category]
+    }
+
+    return document
