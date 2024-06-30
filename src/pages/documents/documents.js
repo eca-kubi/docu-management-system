@@ -195,9 +195,10 @@ const Documents = () => {
         displayExpr: 'title',
         dataSource: listDataSource,
         itemRender: (item) => {
+            const capitalize = (title) => title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
             return (
                 <div className="flex justify-between items-center group">
-                    <span>{item.title}</span>
+                    <span>{capitalize(item.title)}</span>
                     <div className="group-hover:block action-buttons hidden">
                         <div className="flex gap-2">
                             <Button
