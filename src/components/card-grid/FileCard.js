@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {
     faEllipsisV,
@@ -35,6 +35,10 @@ const FileCard = ({
 
     const sortedItems = [...new Set([...defaultCategorySelection, ..._.sortBy(allCategories)])]
 
+    const capitalizeTitle = useMemo(() => {
+        return title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    }, [title]);
+
     return (
         <div key={id} className="col mb-2">
             <div className="card h-100 hover:shadow-xl hover:outline hover:outline-red-300
@@ -47,7 +51,7 @@ const FileCard = ({
                 />
                 <div className="card-body">
                     <FontAwesomeIcon icon={getFileIcon(fileType)} size="3x"/>
-                    <h5 className="card-title mt-2">{title}</h5>
+                    <h5 className="card-title mt-2">{capitalizeTitle}</h5>
                     <TagBox
                         items={sortedItems}
                         labelMode={"floating"}
