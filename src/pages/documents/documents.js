@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import SelectBox, {DropDownOptions} from 'devextreme-react/select-box';
 import FileCardGrid from "../../components/card-grid/FileCardGrid";
 import {useAuth} from "../../contexts/auth";
-import {get, patch, post} from "../../utils/api";
+import {patch, post} from "../../utils/api";
 import notify from 'devextreme/ui/notify';
 import {confirm} from 'devextreme/ui/dialog';
 import {Button, TagBox, TextBox} from "devextreme-react";
@@ -11,12 +11,11 @@ import DataSource from "devextreme/data/data_source";
 import ArrayStore from "devextreme/data/array_store";
 import _, {isNull} from "lodash";
 import AutoSearchBox from "../../components/auto-searchbox/AutoSearchBox";
-import {useCategories} from "../../app-hooks";
+import {useCategories, useDocuments} from "../../app-hooks";
 import UploadDocumentForm from "../../components/upload-document-form/UploadDocumentForm";
 import axios from "axios";
 
 const Documents = () => {
-    const [documents, setDocuments] = useState([]);
     const [gridItems, setGridItems] = useState([]);
     const [setSelectedDocIds] = useState([]);
     const [isLoadPanelVisible, setIsLoadPanelVisible] = useState(true);
@@ -29,32 +28,15 @@ const Documents = () => {
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const {mutate: mutateCategories, categories} = useCategories();
+    const {documents: swrDocuments, mutate: mutateDocuments} = useDocuments(user.id);
+    const [documents, setDocuments] = useState(swrDocuments);
     const [allCategories, setAllCategories] = useState(categories);
     const listRef = useRef();
 
-    const loadDocuments = useCallback(() => {
-        const documentLoader = async () => {
-            try {
-                const response = await get(`${process.env.REACT_APP_API_URL}/users/${user.id}/documents`);
-                if (response.isOk) {
-                    console.log('Fetched documents:', response.data); // Debugging statement
-                    setDocuments(response.data);
-                } else {
-                    console.log('Failed to fetch documents from server.');
-                    notify('Failed to fetch documents from server.', 'error', 6000);
-                }
-            } catch (e) {
-                console.log('Failed to fetch documents from server.', e);
-                notify('Failed to fetch documents from server.', 'error', 6000);
-            }
-        };
-
-        documentLoader().then(() => console.log('Documents loaded successfully.'));
-    }, [user.id]);
 
     useEffect(() => {
-        loadDocuments();
-    }, [loadDocuments]);
+        setDocuments(swrDocuments);
+    }, [swrDocuments]);
 
     useEffect(() => {
         setAllCategories(categories);
@@ -131,7 +113,7 @@ const Documents = () => {
             const response = await patch(`${process.env.REACT_APP_API_URL}/documents/${docId}`, {categories: category});
             if (response.isOk) {
                 console.log('Document category updated successfully.');
-                loadDocuments();
+                await mutateDocuments()
             } else {
                 console.log('Failed to update document category.');
                 notify('Failed to update document category.', 'error', 3000);
@@ -151,7 +133,7 @@ const Documents = () => {
             console.log('Failed to update document category.', e);
             notify('Failed to update document category.', 'error', 3000);
         }
-    }, [categories, loadDocuments, mutateCategories]);
+    }, [categories, mutateCategories, mutateDocuments]);
 
     const handleDocumentSelection = useCallback((id, isDocSelected) => {
         setSelectedDocIds((prevState) => {
@@ -193,7 +175,7 @@ const Documents = () => {
                 const response = await axios.delete(`${process.env.REACT_APP_API_URL}/delete/${id}`);
                 if (response.status === 200) {
                     console.log('File successfully deleted');
-                    loadDocuments();
+                    await mutateDocuments();
                     const store = listRef.current?.instance.getDataSource().store();
                     store.remove(id);
                     listRef.current?.instance.reload();
@@ -206,7 +188,7 @@ const Documents = () => {
         }
         event.stopPropagation();
         return true;
-    }, [loadDocuments]);
+    }, [mutateDocuments]);
 
     const listOptions = useMemo(() => ({
         keyExpr: 'id',

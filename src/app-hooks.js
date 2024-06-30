@@ -1,27 +1,18 @@
-import useSWR, {mutate} from "swr";
+import useSWR, {mutate as globalMutate} from "swr";
 
 const fetcher = url => fetch(url).then((res) => res.json())
 
 const useCategories = () => {
-    const {data: categories, error, isLoading} =
-        useSWR(`${process.env.REACT_APP_API_URL}/categories`, fetcher);
-    return {
-        categories,
-        mutate,
-        error,
-        isLoading
-    }
+    const key = `${process.env.REACT_APP_API_URL}/categories`;
+    const { data: categories, error, isLoading } = useSWR(key, fetcher);
+    return { categories, mutate: () => globalMutate(key), error, isLoading };
 }
 
 const useDocuments = (userId) => {
-    const {data: documents, error, isLoading} =
-        useSWR(`${process.env.REACT_APP_API_URL}/users/${userId}/documents`, fetcher);
-    return {
-        documents,
-        mutate,
-        error,
-        isLoading
-    }
+    const key = `${process.env.REACT_APP_API_URL}/users/${userId}/documents`;
+    const { data: documents, error, isLoading } = useSWR(key, fetcher);
+    return { documents, mutate: () => globalMutate(key), error, isLoading };
 }
+
 
 export {useCategories, useDocuments}
