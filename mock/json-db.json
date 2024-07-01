@@ -1,0 +1,774 @@
+{
+  "users": [
+    {
+      "id": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "firstName": "Connor",
+      "lastName": "Stroman",
+      "name": "Connor Stroman",
+      "email": "Connor.Stroman@gmail.com",
+      "avatar": "https://avatars.githubusercontent.com/u/20003936",
+      "bio": "dreamer, geek, film lover",
+      "position": "Investor Operations Officer",
+      "prefix": "Miss"
+    },
+    {
+      "id": "f05da26a-3582-4157-9853-d825ef377d19",
+      "firstName": "Holly",
+      "lastName": "VonRueden-Stoltenberg",
+      "name": "Holly VonRueden-Stoltenberg",
+      "email": "Holly.VonRueden-Stoltenberg@hotmail.com",
+      "avatar": "https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/979.jpg",
+      "bio": "grad, leader, creator",
+      "position": "Lead Applications Technician",
+      "prefix": "Dr."
+    },
+    {
+      "id": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "firstName": "Korbin",
+      "lastName": "Pagac",
+      "name": "Korbin Pagac",
+      "email": "Korbin_Pagac@yahoo.com",
+      "avatar": "https://avatars.githubusercontent.com/u/57450635",
+      "bio": "blogger",
+      "position": "Senior Identity Consultant",
+      "prefix": "Ms."
+    }
+  ],
+  "categories": [
+    "Rejected",
+    "In Progress",
+    "Important",
+    "Pending Approval",
+    "Miscellaneous",
+    "Draft",
+    "Monthly Report",
+    "Completed",
+    "Pending Review",
+    "Pending",
+    "Approved",
+    "Final",
+    "Feedback Received",
+    "Urgent",
+    "Archive",
+    "Health",
+    "School",
+    "Work",
+    "Personal",
+    "Review"
+  ],
+  "documents": [
+    {
+      "id": "d670343c-320d-4701-ab72-12f4fe34ba08",
+      "hashValue": "73e87b37-a4e1-4a99-a32d-1f9d207cc091",
+      "fileExt": "xlsx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Quam Succedo",
+      "uploadDateReadable": "May 4, 2024",
+      "uploadDate": "2024-05-04T07:53:15.906Z",
+      "fileType": "pdf",
+      "categories": [
+        "Finance"
+      ]
+    },
+    {
+      "id": "82625271-a4a1-4ac1-9b4b-07a39339b560",
+      "hashValue": "78172620-9bfb-47cf-b43e-735e67425d31",
+      "fileExt": "pptx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Cuppedia Ea",
+      "uploadDateReadable": "February 4, 2024",
+      "uploadDate": "2024-02-04T17:20:41.330Z",
+      "fileType": "docx",
+      "categories": [
+        "Archive",
+        "Work"
+      ]
+    },
+    {
+      "id": "02015d03-ab3a-4e79-b3ff-27d193ee2083",
+      "hashValue": "8a938857-6cc6-4e1a-a720-41d437c370f7",
+      "fileExt": "xlsx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Nisi Alius",
+      "uploadDateReadable": "April 21, 2024",
+      "uploadDate": "2024-04-21T20:33:59.811Z",
+      "fileType": "pdf",
+      "categories": [
+        "School",
+        "Finance"
+      ]
+    },
+    {
+      "id": "64f8a1b1-71f0-42ae-82de-40373221de00",
+      "hashValue": "29d39ea7-1b66-4fe1-9a34-6cc26286372d",
+      "fileExt": "pptx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Coniuratio Acer",
+      "uploadDateReadable": "October 5, 2023",
+      "uploadDate": "2023-10-05T09:34:54.528Z",
+      "fileType": "pdf",
+      "categories": [
+        "Finance",
+        "Archive",
+        "Monthly Report",
+        "School"
+      ]
+    },
+    {
+      "id": "6bdaf6e2-e048-4e46-833e-6b5d35e62f87",
+      "hashValue": "a7f8d64e-b175-48a8-84bc-aa4bcdeaf3ae",
+      "fileExt": "pptx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Auctus Acsi",
+      "uploadDateReadable": "October 10, 2023",
+      "uploadDate": "2023-10-10T22:55:34.453Z",
+      "fileType": "docx",
+      "categories": [
+        "Archive",
+        "Work",
+        "Monthly Report"
+      ]
+    },
+    {
+      "id": "f4074acb-ca86-462e-b1b3-ca84e09d8a58",
+      "hashValue": "f3866c31-67d1-480c-b9f2-d08f456ed639",
+      "fileExt": "docx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Creta Teres",
+      "uploadDateReadable": "May 28, 2023",
+      "uploadDate": "2023-05-28T21:26:05.666Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Archive",
+        "Work",
+        "Monthly Report"
+      ]
+    },
+    {
+      "id": "7fa52d61-db81-444e-87d2-94d5e8f3627f",
+      "hashValue": "6d787b0e-71c5-4edd-981b-2cb67584e983",
+      "fileExt": "docx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Aedificium Ago",
+      "uploadDateReadable": "December 16, 2023",
+      "uploadDate": "2023-12-16T19:52:38.932Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Monthly Report",
+        "Work"
+      ]
+    },
+    {
+      "id": "e688e97c-f749-4bf9-a267-54a94365e3e7",
+      "hashValue": "e36e2e46-65d5-47b8-bda2-419a6172dcde",
+      "fileExt": "xlsx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Cena Tyrannus",
+      "uploadDateReadable": "February 22, 2024",
+      "uploadDate": "2024-02-22T06:37:37.745Z",
+      "fileType": "docx",
+      "categories": [
+        "Archive",
+        "Work",
+        "Finance"
+      ]
+    },
+    {
+      "id": "9a2a9f1a-413f-4e6e-820b-0000212e4360",
+      "hashValue": "b5d483d8-738f-4bf5-8614-f88e22af776c",
+      "fileExt": "docx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Coepi Tolero",
+      "uploadDateReadable": "January 1, 2024",
+      "uploadDate": "2024-01-01T00:24:34.689Z",
+      "fileType": "docx",
+      "categories": [
+        "Monthly Report",
+        "Work",
+        "Finance",
+        "School",
+        "Archive"
+      ]
+    },
+    {
+      "id": "effb6e03-738b-4665-9b42-365b1176b21c",
+      "hashValue": "7de6d833-ee47-4762-91d3-e3fc8370f661",
+      "fileExt": "docx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Soluta Comprehendo",
+      "uploadDateReadable": "August 26, 2023",
+      "uploadDate": "2023-08-26T11:27:26.878Z",
+      "fileType": "docx",
+      "categories": [
+        "Monthly Report",
+        "Finance",
+        "Archive"
+      ]
+    },
+    {
+      "id": "25455f42-e714-4540-82b8-d0121ec10660",
+      "hashValue": "181cc947-3739-4628-bffc-7ad81b08ac26",
+      "fileExt": "pptx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Volva Claro",
+      "uploadDateReadable": "July 13, 2023",
+      "uploadDate": "2023-07-13T07:37:52.779Z",
+      "fileType": "pptx",
+      "categories": [
+        "Finance",
+        "Monthly Report",
+        "School"
+      ]
+    },
+    {
+      "id": "631a17e7-f1df-420b-8e8d-6f1408ec8b2b",
+      "hashValue": "6a9ffe55-d646-41fd-8422-31102d7eecf1",
+      "fileExt": "pptx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Curriculum Theologus",
+      "uploadDateReadable": "April 13, 2024",
+      "uploadDate": "2024-04-13T20:03:39.761Z",
+      "fileType": "xlsx",
+      "categories": [
+        "School",
+        "Monthly Report",
+        "Finance",
+        "Archive"
+      ]
+    },
+    {
+      "id": "549786b3-4041-4313-88aa-8cd0379e311c",
+      "hashValue": "ce441398-2d1d-4f8c-9480-7c368d2c9d84",
+      "fileExt": "docx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Usitas Cervus",
+      "uploadDateReadable": "August 1, 2023",
+      "uploadDate": "2023-08-01T04:11:45.331Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Monthly Report",
+        "School"
+      ]
+    },
+    {
+      "id": "273ab20f-f85f-49ba-8ef1-69aea8789e67",
+      "hashValue": "5d4889c5-209e-4ff5-97b8-165f350bb290",
+      "fileExt": "docx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Temporibus Tactus",
+      "uploadDateReadable": "October 22, 2023",
+      "uploadDate": "2023-10-22T01:57:52.988Z",
+      "fileType": "pdf",
+      "categories": [
+        "Work",
+        "School",
+        "Archive"
+      ]
+    },
+    {
+      "id": "c796d43e-82fd-496c-957a-351ba6fb6966",
+      "hashValue": "410d392e-445e-4aea-a821-3e23caee8ff5",
+      "fileExt": "pptx",
+      "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+      "author": "Connor Stroman",
+      "title": "Debilito Eos",
+      "uploadDateReadable": "October 20, 2023",
+      "uploadDate": "2023-10-20T21:23:59.914Z",
+      "fileType": "pdf",
+      "categories": [
+        "School"
+      ]
+    },
+    {
+      "id": "43d0f601-ff5d-41ba-935b-b046569303d0",
+      "hashValue": "a2b73e56-c1d2-464e-a679-47d4c50d0e3e",
+      "fileExt": "pdf",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Accusator Abbas",
+      "uploadDateReadable": "September 6, 2023",
+      "uploadDate": "2023-09-06T15:41:10.992Z",
+      "fileType": "docx",
+      "categories": [
+        "Monthly Report",
+        "Work",
+        "Finance",
+        "Archive"
+      ]
+    },
+    {
+      "id": "2bb5e5cf-acd1-4bfd-80a9-2642ccb29407",
+      "hashValue": "76a3cbeb-3e09-4b57-8cbd-406ecdda6427",
+      "fileExt": "docx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Conitor Aestus",
+      "uploadDateReadable": "April 17, 2024",
+      "uploadDate": "2024-04-17T20:18:12.378Z",
+      "fileType": "pdf",
+      "categories": [
+        "Monthly Report",
+        "Archive",
+        "Finance",
+        "School"
+      ]
+    },
+    {
+      "id": "e037ac64-e172-4601-a28a-d689bd55f067",
+      "hashValue": "b28bf1f4-7580-4b75-93d7-618f8747096c",
+      "fileExt": "pdf",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Usitas Basium",
+      "uploadDateReadable": "November 29, 2023",
+      "uploadDate": "2023-11-29T21:48:43.480Z",
+      "fileType": "pptx",
+      "categories": [
+        "Monthly Report",
+        "Archive"
+      ]
+    },
+    {
+      "id": "7ef4aa3c-aeed-4dac-a6e4-e35c240f6774",
+      "hashValue": "6b720a5e-3c72-4cc0-a724-bc4c95c46a19",
+      "fileExt": "pptx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Surculus Confero",
+      "uploadDateReadable": "February 24, 2024",
+      "uploadDate": "2024-02-24T08:28:26.070Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Work",
+        "Archive",
+        "School",
+        "Finance",
+        "Monthly Report"
+      ]
+    },
+    {
+      "id": "4ee03c5f-1162-4f17-85c0-073b6cb2ac5c",
+      "hashValue": "4695c3e9-d44f-4620-9357-183226420316",
+      "fileExt": "xlsx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Degero Tenax",
+      "uploadDateReadable": "June 8, 2023",
+      "uploadDate": "2023-06-08T09:56:01.541Z",
+      "fileType": "docx",
+      "categories": [
+        "Archive"
+      ]
+    },
+    {
+      "id": "4f50acc3-cc57-4dd4-a1a2-db9f80f8d299",
+      "hashValue": "de36ca2a-e25c-452b-9176-1d5715b3549e",
+      "fileExt": "docx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Curiositas Adversus",
+      "uploadDateReadable": "May 15, 2023",
+      "uploadDate": "2023-05-15T07:01:53.981Z",
+      "fileType": "pdf",
+      "categories": [
+        "Finance",
+        "Archive",
+        "School",
+        "Monthly Report",
+        "Work"
+      ]
+    },
+    {
+      "id": "7bf0df1f-0d4b-4e4b-ae63-b3c0a5437f94",
+      "hashValue": "53a7c0fb-0537-4fd2-bd87-dbb50f5158d7",
+      "fileExt": "xlsx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Copia Animadverto",
+      "uploadDateReadable": "July 3, 2023",
+      "uploadDate": "2023-07-03T02:37:01.399Z",
+      "fileType": "docx",
+      "categories": [
+        "Work",
+        "Monthly Report",
+        "Finance"
+      ]
+    },
+    {
+      "id": "b78d308b-1ff4-4f0f-810d-0bc6fdab086d",
+      "hashValue": "7890c926-8412-482b-87e2-1fc7f00d9a2d",
+      "fileExt": "pptx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Tener Cito",
+      "uploadDateReadable": "July 6, 2023",
+      "uploadDate": "2023-07-06T12:06:25.468Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Work",
+        "School"
+      ]
+    },
+    {
+      "id": "170523eb-a332-473e-abfb-a20da6821109",
+      "hashValue": "868917fe-88f8-4cc5-ad01-37f5ed1bf20e",
+      "fileExt": "docx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Clarus Tabula",
+      "uploadDateReadable": "April 13, 2024",
+      "uploadDate": "2024-04-13T17:07:43.054Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Work",
+        "Finance",
+        "Monthly Report",
+        "Archive",
+        "School"
+      ]
+    },
+    {
+      "id": "2fc419a2-2c45-4036-aa4f-8f325710eea6",
+      "hashValue": "ce614c03-9e88-49b4-8896-b796e32e2585",
+      "fileExt": "pdf",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Atavus Textilis",
+      "uploadDateReadable": "April 25, 2024",
+      "uploadDate": "2024-04-25T02:32:19.681Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Archive",
+        "Work"
+      ]
+    },
+    {
+      "id": "14b71acb-2ffd-4886-91f1-40f23b5967f4",
+      "hashValue": "4b4c79b9-79d9-46b1-9594-84dc2af386ff",
+      "fileExt": "pdf",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Cupiditas Apto",
+      "uploadDateReadable": "February 15, 2024",
+      "uploadDate": "2024-02-15T20:32:35.619Z",
+      "fileType": "xlsx",
+      "categories": [
+        "School",
+        "Monthly Report"
+      ]
+    },
+    {
+      "id": "408a5f6f-02ae-4518-bade-e566cb4f8934",
+      "hashValue": "7335e573-da92-4f95-b43b-c042c9001d33",
+      "fileExt": "xlsx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Virtus Admoneo",
+      "uploadDateReadable": "November 4, 2023",
+      "uploadDate": "2023-11-04T12:31:09.050Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Finance",
+        "Work",
+        "School"
+      ]
+    },
+    {
+      "id": "17c99712-46e2-4e07-84bd-03d5c8be4dbc",
+      "hashValue": "94223661-72eb-4839-add4-ec54bbc1133f",
+      "fileExt": "pptx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Derideo Decretum",
+      "uploadDateReadable": "February 22, 2024",
+      "uploadDate": "2024-02-22T02:58:08.591Z",
+      "fileType": "pptx",
+      "categories": [
+        "Work",
+        "Monthly Report"
+      ]
+    },
+    {
+      "id": "43b43051-f12c-48f5-a024-11932d70d432",
+      "hashValue": "0d79ee6a-9a5e-4815-a434-6e6d2d1a07da",
+      "fileExt": "xlsx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Conduco Comburo",
+      "uploadDateReadable": "December 3, 2023",
+      "uploadDate": "2023-12-03T15:26:40.548Z",
+      "fileType": "pptx",
+      "categories": [
+        "Work",
+        "School"
+      ]
+    },
+    {
+      "id": "8066327f-bc9e-4356-a5e9-43f8fd230bd8",
+      "hashValue": "41dc2e0c-cade-445a-bad8-a0c165ea7037",
+      "fileExt": "docx",
+      "userId": "f05da26a-3582-4157-9853-d825ef377d19",
+      "author": "Holly VonRueden-Stoltenberg",
+      "title": "Audentia Abbas",
+      "uploadDateReadable": "November 6, 2023",
+      "uploadDate": "2023-11-06T22:26:09.578Z",
+      "fileType": "docx",
+      "categories": [
+        "School"
+      ]
+    },
+    {
+      "id": "97334332-1095-44f1-a454-b4a253dcee65",
+      "hashValue": "72a0e735-a727-4ef2-a2ef-79f2141ef348",
+      "fileExt": "docx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Talio Defungo",
+      "uploadDateReadable": "October 25, 2023",
+      "uploadDate": "2023-10-25T03:04:20.068Z",
+      "fileType": "xlsx",
+      "categories": [
+        "School"
+      ]
+    },
+    {
+      "id": "3d00ce68-7a0a-4f78-b648-ba22b919874b",
+      "hashValue": "83846aa5-5d59-4837-826e-3522b2622806",
+      "fileExt": "xlsx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Subnecto Debeo",
+      "uploadDateReadable": "March 14, 2024",
+      "uploadDate": "2024-03-14T09:43:28.265Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Monthly Report",
+        "School",
+        "Archive",
+        "Work",
+        "Finance"
+      ]
+    },
+    {
+      "id": "7d59ec57-7499-4473-8f33-dc870013e577",
+      "hashValue": "31354492-d77e-4f4c-a4cb-ebb75d029abc",
+      "fileExt": "pptx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Carus Eligendi",
+      "uploadDateReadable": "June 24, 2023",
+      "uploadDate": "2023-06-24T21:20:47.654Z",
+      "fileType": "pptx",
+      "categories": [
+        "School",
+        "Work",
+        "Finance"
+      ]
+    },
+    {
+      "id": "21330ae3-8bf0-4032-858e-f8503ef5ce11",
+      "hashValue": "5fa3a602-90d6-4544-89cd-fad36385de02",
+      "fileExt": "docx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Iste Solus",
+      "uploadDateReadable": "November 16, 2023",
+      "uploadDate": "2023-11-16T20:25:01.106Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Archive",
+        "Monthly Report",
+        "Work",
+        "Finance",
+        "School"
+      ]
+    },
+    {
+      "id": "0077ae83-607c-468a-92d1-c65204833a45",
+      "hashValue": "1cb5e849-28f9-42b7-a041-9d6c1b304b33",
+      "fileExt": "docx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Trado Decet",
+      "uploadDateReadable": "January 14, 2024",
+      "uploadDate": "2024-01-14T17:50:48.685Z",
+      "fileType": "pptx",
+      "categories": [
+        "Archive",
+        "Work",
+        "School"
+      ]
+    },
+    {
+      "id": "f4654a9d-2e0f-47b2-9aac-9cb92ff39777",
+      "hashValue": "6da8fc32-cde7-48b4-83f4-acb8c84ba945",
+      "fileExt": "pdf",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Truculenter Ustulo",
+      "uploadDateReadable": "April 21, 2024",
+      "uploadDate": "2024-04-21T12:32:13.848Z",
+      "fileType": "xlsx",
+      "categories": [
+        "School"
+      ]
+    },
+    {
+      "id": "522e508a-2e80-48de-aabe-3e60fb32500e",
+      "hashValue": "79dedaad-6215-446c-aedc-25f0b3f9eb9f",
+      "fileExt": "pptx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Defaeco Arx",
+      "uploadDateReadable": "August 7, 2023",
+      "uploadDate": "2023-08-07T05:17:13.816Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Archive",
+        "School",
+        "Finance",
+        "Work",
+        "Monthly Report"
+      ]
+    },
+    {
+      "id": "e6af622d-47f6-4e61-adbc-423a33e7872d",
+      "hashValue": "44543fd6-ddc0-46b7-a35b-2640068647b4",
+      "fileExt": "pptx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Cattus Sapiente",
+      "uploadDateReadable": "May 27, 2023",
+      "uploadDate": "2023-05-27T00:23:49.820Z",
+      "fileType": "pptx",
+      "categories": [
+        "School",
+        "Finance",
+        "Archive",
+        "Work"
+      ]
+    },
+    {
+      "id": "42c1e461-5267-48e1-a9e0-b5fbd678c080",
+      "hashValue": "683d095b-d5fd-468b-b10e-a13e06df029f",
+      "fileExt": "docx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Victus Tenuis",
+      "uploadDateReadable": "July 15, 2023",
+      "uploadDate": "2023-07-15T15:58:32.855Z",
+      "fileType": "pdf",
+      "categories": [
+        "Work",
+        "School"
+      ]
+    },
+    {
+      "id": "401c46e3-4bfa-404c-96cb-42d4a7da3f11",
+      "hashValue": "4a4b95f8-3697-4532-95f8-3a29784ba9b9",
+      "fileExt": "pdf",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Apud Vos",
+      "uploadDateReadable": "May 7, 2023",
+      "uploadDate": "2023-05-07T05:14:21.248Z",
+      "fileType": "docx",
+      "categories": [
+        "Work",
+        "Archive",
+        "School"
+      ]
+    },
+    {
+      "id": "0bef9b55-be1a-450a-8ab1-d5bcaf66c584",
+      "hashValue": "a3a68c31-ebe7-4f30-addc-80e1e9339bb5",
+      "fileExt": "docx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Consectetur Absconditus",
+      "uploadDateReadable": "May 25, 2023",
+      "uploadDate": "2023-05-25T02:50:03.093Z",
+      "fileType": "pptx",
+      "categories": [
+        "Work",
+        "Monthly Report",
+        "Archive"
+      ]
+    },
+    {
+      "id": "57bd291b-0890-444a-b4f2-d5a121e7ddd3",
+      "hashValue": "003b6d21-1230-44dd-9443-60eb8fe497df",
+      "fileExt": "xlsx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Studio Vita",
+      "uploadDateReadable": "January 2, 2024",
+      "uploadDate": "2024-01-02T22:14:42.792Z",
+      "fileType": "docx",
+      "categories": [
+        "School",
+        "Work"
+      ]
+    },
+    {
+      "id": "5906459d-6c19-4ea0-bde5-5e4979b33670",
+      "hashValue": "3f7be848-b44e-4d67-8125-dad106e5359c",
+      "fileExt": "docx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Volaticus Cubicularis",
+      "uploadDateReadable": "November 8, 2023",
+      "uploadDate": "2023-11-08T17:59:33.863Z",
+      "fileType": "pdf",
+      "categories": [
+        "Finance",
+        "School",
+        "Archive",
+        "Work"
+      ]
+    },
+    {
+      "id": "e40d23b9-d5f7-4c8b-8f8f-4dfa5676c100",
+      "hashValue": "db41e329-c3b2-4a94-bc14-11ec71258397",
+      "fileExt": "pptx",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Subiungo Turbo",
+      "uploadDateReadable": "December 6, 2023",
+      "uploadDate": "2023-12-06T07:58:57.871Z",
+      "fileType": "docx",
+      "categories": [
+        "School",
+        "Finance"
+      ]
+    },
+    {
+      "id": "da24bc24-ff33-4686-96a7-9e41e1fc5d24",
+      "hashValue": "5c270eb6-5c89-4eb6-8b20-91fce77a4587",
+      "fileExt": "pdf",
+      "userId": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+      "author": "Korbin Pagac",
+      "title": "Venustas Canis",
+      "uploadDateReadable": "March 3, 2024",
+      "uploadDate": "2024-03-03T01:38:55.539Z",
+      "fileType": "xlsx",
+      "categories": [
+        "Finance"
+      ]
+    }
+  ]
+}
