@@ -1,7 +1,7 @@
-import uuid
 from flask import request
 from flask_restful import Resource
 from tinydb import Query
+
 from library.python.Database import Database
 
 db = Database().get_db()
