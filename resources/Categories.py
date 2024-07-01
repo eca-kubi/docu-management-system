@@ -7,27 +7,6 @@ db = Database().get_db()
 
 
 class Categories(Resource):
-    # @staticmethod
-    # def get_categories():
-    #     try:
-    #         with open('./json-db.json', 'r', encoding='utf-8') as f:
-    #             data = json.load(f)
-    #             categories = data['categories']
-    #         return categories
-    #     except Exception as e:
-    #         return {"error": str(e)}, 500
-    #
-    # @staticmethod
-    # def write_categories(categories):
-    #     try:
-    #         with open('./json-db.json', 'r', encoding='utf-8') as f:
-    #             data = json.load(f)
-    #             data['categories'] = categories
-    #         with open('./json-db.json', 'w', encoding='utf-8') as f:
-    #             json.dump(data, f, indent=4)
-    #     except Exception as e:
-    #         return {"error": str(e)}, 500
-
     @staticmethod
     def get():
         categories = db.table('categories').get(doc_id=1)
