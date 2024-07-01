@@ -1,0 +1,76 @@
+{
+    "categories": {
+        "1": {
+            "id": "1",
+            "data": [
+                "Political",
+                "Review",
+                "Weekly Report",
+                "Personal",
+                "Daily Report",
+                "Religion and Faith",
+                "Legal",
+                "College",
+                "Culture",
+                "International",
+                "Urgent",
+                "Education",
+                "Important",
+                "Monthly Report",
+                "Miscellaneous",
+                "School",
+                "Classified",
+                "Pending Review",
+                "Draft",
+                "Equality",
+                "Work",
+                "Hackathon",
+                "Feedback Received",
+                "Finance",
+                "Confidential",
+                "Health",
+                "Hacking",
+                "Stationary",
+                "Final",
+                "Completed",
+                "Archive",
+                "Intern"
+            ]
+        }
+    },
+    "users": {
+        "1": {
+            "id": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "firstName": "Connor",
+            "lastName": "Stroman",
+            "name": "Connor Stroman",
+            "email": "Connor.Stroman@gmail.com",
+            "avatar": "https://avatars.githubusercontent.com/u/20003936",
+            "bio": "dreamer, geek, film lover",
+            "position": "Investor Operations Officer",
+            "prefix": "Miss"
+        },
+        "2": {
+            "id": "f05da26a-3582-4157-9853-d825ef377d19",
+            "firstName": "Holly",
+            "lastName": "VonRueden-Stoltenberg",
+            "name": "Holly VonRueden-Stoltenberg",
+            "email": "Holly.VonRueden-Stoltenberg@hotmail.com",
+            "avatar": "https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/979.jpg",
+            "bio": "grad, leader, creator",
+            "position": "Lead Applications Technician",
+            "prefix": "Dr."
+        },
+        "3": {
+            "id": "dae5b752-3bcd-461f-9aed-e59ead1d7687",
+            "firstName": "Korbin",
+            "lastName": "Pagac",
+            "name": "Korbin Pagac",
+            "email": "Korbin_Pagac@yahoo.com",
+            "avatar": "https://avatars.githubusercontent.com/u/57450635",
+            "bio": "blogger",
+            "position": "Senior Identity Consultant",
+            "prefix": "Ms."
+        }
+    }
+}
