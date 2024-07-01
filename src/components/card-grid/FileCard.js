@@ -18,13 +18,16 @@ const FileCard = ({
                       onCardSelected, onCategoryUpdate, downloadHandler, deleteHandler
                   }) => {
     const getFileIcon = (fileType) => {
+        // Remove the dot at the start of the fileType
+        const cleanFileType = fileType.startsWith('.') ? fileType.substring(1) : fileType;
+
         const fileTypes = {
             pdf: faFilePdf,
             docx: faFileWord,
             pptx: faFilePowerpoint,
             mp3: faFileAudio,
         };
-        return fileType in fileTypes ? fileTypes[fileType] : faFile;
+        return cleanFileType in fileTypes ? fileTypes[cleanFileType] : faFile;
     };
 
     const [isSelected, setIsSelected] = useState(false);
