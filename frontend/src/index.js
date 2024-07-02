@@ -6,10 +6,9 @@ import './themes/generated/tailwind.css'
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import {licenseKey} from "./devextreme-license"
-import config from 'devextreme/core/config'
-
-config({licenseKey})
+//import {licenseKey} from "./devextreme-license"
+//import config from 'devextreme/core/config'
+//config({licenseKey})
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

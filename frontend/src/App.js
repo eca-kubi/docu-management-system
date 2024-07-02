@@ -1,4 +1,3 @@
-//import 'devextreme/dist/css/dx.common.css';
 import React from 'react';
 import {HashRouter as Router} from 'react-router-dom';
 import LoadPanel from 'devextreme-react/load-panel';
@@ -11,7 +10,6 @@ import config from "devextreme/core/config";
 import ErrorBoundary from "./components/error-boundary/ErrorBoundary";
 import './themes/generated/theme.base.css';
 import './themes/generated/theme.additional.css';
-//import './dx-styles.scss';
 
 function App() {
     const {user, loading} = useAuth();
@@ -45,9 +43,6 @@ function App() {
 
 export default function Root() {
     const screenSizeClass = useScreenSizeClass();
-/*    useEffect(() => {
-        console.clear()
-    }, []);*/
     return (
         <ErrorBoundary>
             <Router>
