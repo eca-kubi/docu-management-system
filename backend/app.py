@@ -1,5 +1,6 @@
 import os
 
+from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
@@ -15,6 +16,7 @@ from resources.Users import Users
 from routes import search_bp, download_bp, delete_bp, add_dummy_documents_bp
 from routes import upload_file_bp
 
+load_dotenv()  # take environment variables from .env.
 
 app = Flask(__name__)
 
@@ -52,7 +54,8 @@ def hello_world():  # put application's code here
 
 if __name__ == '__main__':
     try:
-        app.run(port=5000, debug=True, use_reloader=True)
+        port = int(os.getenv('PORT', 5000))  # Get port from environment variable, default to 5000 if not set
+        app.run(port=port, debug=True, use_reloader=True)
     except Exception as e:
         print(e)
         print("Failed to start server")
