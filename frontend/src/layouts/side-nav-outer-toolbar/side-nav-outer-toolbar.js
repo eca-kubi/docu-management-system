@@ -48,13 +48,13 @@ export default function SideNavOuterToolbar({title, children}) {
         return menuStatus === MenuStatus.Closed;
     }, [isLarge, menuStatus]);
 
-    const onNavigationChanged = useCallback(({itemData, event, node}) => {
-        if (menuStatus === MenuStatus.Closed || !itemData.path || node.selected) {
+    const onNavigationChanged = useCallback(({itemData, event}) => {
+        if (menuStatus === MenuStatus.Closed) {
             event.preventDefault();
             return;
         }
 
-        navigate(itemData.path);
+        itemData.path && navigate(itemData.path);
         //scrollViewRef.current.instance.scrollTo(0);
 
         if (!isLarge || menuStatus === MenuStatus.TemporaryOpened) {

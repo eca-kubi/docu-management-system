@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import TreeView, {Item} from 'devextreme-react/tree-view';
 import {navigation} from '../../app-navigation';
 import {useNavigation} from '../../contexts/navigation';
@@ -29,7 +29,7 @@ export default React.forwardRef(function SideNavigationMenu(props, ref) {
         normalizePath, [isLarge]
     );
 
-    const {navigationData: {currentPath}} = useNavigation();
+    const {navigationData: {currentPath}, setNavigationData} = useNavigation();
     const [selectedPath, setSelectedPath] = useState(currentPath);
 
     const treeViewRef = ref;
@@ -51,25 +51,11 @@ export default React.forwardRef(function SideNavigationMenu(props, ref) {
             return;
         }
         console.log(currentPath)
-        const id = _.trimStart(currentPath, ['/']);
-
-try {
-    if (id) {
-        treeView.selectItem(id);
-        treeView.expandItem(id);
-    }
-} catch (e) {
-    console.error(e);
-}
-
-
+        const id = _.trimStart(currentPath, '/');
+        id && treeView.selectItem(id);
         if (compactMode) {
             treeView.collapseAll();
         }
-
-       // treeView.repaint();
-
-
     }, [currentPath, compactMode, selectedPath, treeViewRef, items]);
 
     const toggleItemVisibility = useCallback((item) => {
@@ -88,11 +74,13 @@ try {
 
     const handleOnItemClick = useCallback((e) => {
         selectedItemChanged(e);
+        setNavigationData({currentPath: e.itemData.path || e.itemData.keyFn()});
         setSelectedPath(e.itemData.keyFn());
         setSelectedItem(e.itemData);
     }, [selectedItemChanged, setSelectedItem]);
 
     const handleOnItemSelectionChanged = useCallback((e) => {
+        setNavigationData({currentPath: e.itemData.path || e.itemData.keyFn()});
         setSelectedPath(e.itemData.keyFn());
         setSelectedItem(e.itemData);
     }, [setSelectedItem]);
@@ -118,17 +106,17 @@ try {
                 >
                     {
                         items.map((item) =>
-                                (
-                                    <Item keyFn={() => item.key}
-                                        key={item.key}
-                                        icon={item.icon}
-                                        text={item.text}
-                                        path={item.path}
-                                        expanded={false}
-                                        items={item?.items}
-                                        visible={toggleItemVisibility(item)}
-                                    />
-                                )
+                            (
+                                <Item keyFn={() => item.key}
+                                      key={item.key}
+                                      icon={item.icon}
+                                      text={item.text}
+                                      path={item.path}
+                                      expanded={false}
+                                      items={item?.items}
+                                      visible={toggleItemVisibility(item)}
+                                />
+                            )
                         )
                     }
                 </TreeView>
