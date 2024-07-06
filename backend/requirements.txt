@@ -1,4 +1,5 @@
 aniso8601==9.0.1
+aws-wsgi==0.2.7
 blinker==1.8.2
 certifi==2024.6.2
 charset-normalizer==3.3.2
