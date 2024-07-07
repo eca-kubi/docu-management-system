@@ -18,17 +18,13 @@ from routes import upload_file_bp
 # AWS Lambda requires this to be global
 load_dotenv()
 app = Flask(__name__)
-CORS(app)
+frontend_url = os.environ.get('FRONTEND_URL')
+if not frontend_url:
+    raise ValueError("FRONTEND_URL environment variable is not set!")
+CORS(app, resources={r"/*": {"origins": frontend_url}})
 
 # Initialize other global variables
 trieUsersMap = initialize_trie_users()
-
-# Absolute Path Configuration
-UPLOAD_FOLDER = '/tmp'  # Lambda function's writable directory
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Ensure the Directory Exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 api = Api(app)
 api.add_resource(Categories, '/categories')
@@ -52,5 +48,26 @@ def hello_world():
 
 # Lambda handler function
 def lambda_handler(event, context):
+    import json
     from awsgi import response
+
+    print(json.dumps(event))  # Log the event for debugging
+
+    if 'httpMethod' not in event:
+        # This might be an HTTP API event
+        http_method = event['requestContext']['http']['method']
+        event['httpMethod'] = http_method
+
+        # If path is missing, add it
+        if 'path' not in event:
+            event['path'] = event['requestContext']['http']['path']
+
+        # Handle query string parameters
+        if 'queryStringParameters' not in event or event['queryStringParameters'] is None:
+            event['queryStringParameters'] = {}
+
+        # Handle multi-value query string parameters (if needed)
+        if 'multiValueQueryStringParameters' not in event or event['multiValueQueryStringParameters'] is None:
+            event['multiValueQueryStringParameters'] = {}
+
     return response(app, event, context)

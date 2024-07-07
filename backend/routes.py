@@ -13,6 +13,12 @@ from helpers import compute_file_hash
 from library.python.Database import Database
 from library.python.Document import Document as TrieDocument
 
+# Upload Path Configuration
+UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') if os.environ.get('UPLOAD_FOLDER') else './uploads'
+# Ensure the Directory Exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
 db = Database().get_db()
 
 search_bp = Blueprint('search', __name__)
@@ -75,7 +81,6 @@ def validate_title():
 @upload_file_bp.route('/documents/upload', methods=['POST'])
 @cross_origin()  # This enables CORS for this specific route
 def upload_file():
-    from app import app
     # check if the post request has the file part
     if 'file' not in request.files:
         return {'message': 'No file part in the request'}, 400
@@ -143,7 +148,7 @@ def upload_file():
                 file_name = f"{new_document['hashValue']}{new_document['fileExt']}"
                 # Reset the file stream position again before saving
                 file.stream.seek(0)  # Move the stream pointer back to the beginning
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_name))  # Save with new file name
+                file.save(os.path.join(UPLOAD_FOLDER, file_name))  # Save with new file name
 
                 # insert the document into the database
                 documents_table.insert(new_document)
@@ -167,7 +172,6 @@ def upload_file():
 
 @download_bp.route('/download/<file_id>', methods=['GET'])
 def download_file(file_id):
-    from app import UPLOAD_FOLDER
 
     Document = Query()
     documents_table = db.table('documents')
@@ -186,7 +190,6 @@ def download_file(file_id):
 
 @delete_bp.route('/delete/<file_id>', methods=['DELETE'])
 def delete_file(file_id):
-    from app import UPLOAD_FOLDER
 
     Document = Query()
     documents_table = db.table('documents')

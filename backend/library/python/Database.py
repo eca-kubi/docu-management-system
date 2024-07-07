@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 
 from tinydb import TinyDB
@@ -39,10 +40,8 @@ def preprocess_data(data):
 
 class Database(metaclass=Singleton):
     def __init__(self):
-        self.db = TinyDB('./db.json', storage=UTF8JSONStorage, sort_keys=True, indent=4, separators=(',', ': '))
-        self.populate_db('categories')
-        self.populate_db('users')
-        self.populate_db('documents')
+        self.db_path = os.environ.get('DB_PATH') if os.environ.get('DB_PATH') else './db.json'
+        self.db = TinyDB(self.db_path, storage=UTF8JSONStorage, sort_keys=True, indent=4, separators=(',', ': '))
 
     def get_db(self):
         return self.db
@@ -52,7 +51,7 @@ class Database(metaclass=Singleton):
         return str(uuid.uuid4())
 
     def populate_db(self, resource_name):
-        with open('./db.json', 'r', encoding='utf-8') as f:
+        with open(self.db_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             resources = data.get(resource_name, [])  # Access the resource key
             resources = preprocess_data(resources)  # Preprocess the data
