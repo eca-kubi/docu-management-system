@@ -22,13 +22,6 @@ app = Flask(__name__)
 
 trieUsersMap = initialize_trie_users()
 
-# Absolute Path Configuration (Recommended)
-UPLOAD_FOLDER = os.path.abspath(os.path.join(app.root_path, 'uploads'))  # Dynamic absolute path
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Ensure the Directory Exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
 CORS(app)
 
 api = Api(app)

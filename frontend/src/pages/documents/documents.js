@@ -17,7 +17,7 @@ import axios from "axios";
 
 const Documents = () => {
     const [gridItems, setGridItems] = useState([]);
-    const [setSelectedDocIds] = useState([]);
+    //const [selectedDocIds, setSelectedDocIds] = useState([]);
     const [isLoadPanelVisible, setIsLoadPanelVisible] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
     const [pages, setPages] = useState([1]);
@@ -30,7 +30,7 @@ const Documents = () => {
     const {mutate: mutateCategories, categories} = useCategories();
     const {documents: swrDocuments, mutate: mutateDocuments} = useDocuments(user.id);
     const [documents, setDocuments] = useState(swrDocuments);
-    const [allCategories, setAllCategories] = useState(categories);
+    const [allCategories, setAllCategories] = useState(categories || []);
     const listRef = useRef();
 
 
@@ -135,7 +135,7 @@ const Documents = () => {
         }
     }, [categories, mutateCategories, mutateDocuments]);
 
-    const handleDocumentSelection = useCallback((id, isDocSelected) => {
+/*    const handleDocumentSelection = useCallback((id, isDocSelected) => {
         setSelectedDocIds((prevState) => {
             if (isDocSelected) {
                 return [...prevState, id];
@@ -143,7 +143,7 @@ const Documents = () => {
                 return prevState.filter((docId) => docId !== id);
             }
         });
-    }, [setSelectedDocIds]);
+    }, [setSelectedDocIds]);*/
 
     const handleSearchResults = useCallback((data) => {
         console.log('Search results:', data);
@@ -294,9 +294,7 @@ const Documents = () => {
                             const page = isNull(e.selectedItem) ? itemDatasource.pageIndex() : e.selectedItem - 1;
                             setCurrentPage(page);
                             itemDatasource.pageIndex(page);
-                            itemDatasource.load().then(
-                                setGridItems(itemDatasource.items())
-                            )
+                            itemDatasource.load().then(() => setGridItems(itemDatasource.items()));
                         }
                     }
                     buttons={[
@@ -309,9 +307,7 @@ const Documents = () => {
                                     if (currentPage > 0) {
                                         setCurrentPage(currentPage - 1);
                                         itemDatasource.pageIndex(currentPage - 1);
-                                        itemDatasource.load().then(
-                                            setGridItems(itemDatasource.items())
-                                        )
+                                        itemDatasource.load().then(() => setGridItems(itemDatasource.items()))
                                     }
                                 },
                                 disabled: currentPage === 0 || totalPages === 0
@@ -326,9 +322,7 @@ const Documents = () => {
                                     if (currentPage < totalPages) {
                                         setCurrentPage(currentPage + 1);
                                         itemDatasource.pageIndex(currentPage + 1);
-                                        itemDatasource.load().then(
-                                            setGridItems(itemDatasource.items())
-                                        )
+                                        itemDatasource.load().then(() => setGridItems(itemDatasource.items()))
                                     }
                                 },
                                 disabled: currentPage + 1 === totalPages || totalPages === 0
@@ -346,7 +340,7 @@ const Documents = () => {
                     items={gridItems}
                     allCategories={allCategories}
                     onCategoryUpdate={handleCategoryUpdate}
-                    onCardSelected={handleDocumentSelection}
+                    //onCardSelected={handleDocumentSelection}
                     onItemDeleted={handleDelete}
                     onItemDownload={handleDownload}
                 />
