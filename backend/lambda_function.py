@@ -49,9 +49,15 @@ def hello_world():
 # Lambda handler function
 def lambda_handler(event, context):
     import json
+    import shutil
     from awsgi import response
 
     print(json.dumps(event))  # Log the event for debugging
+
+    # Copy db.json to DB_PATH if it's not already there
+    db_path = os.environ.get('DB_PATH') if os.environ.get('DB_PATH') else '/tmp/db.json'
+    if not os.path.exists(db_path):
+        shutil.copy('./db.json', '/tmp/db.json')
 
     if 'httpMethod' not in event:
         # This might be an HTTP API event
