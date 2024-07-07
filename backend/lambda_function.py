@@ -56,8 +56,11 @@ def lambda_handler(event, context):
 
     # Copy db.json to DB_PATH if it's not already there
     db_path = os.environ.get('DB_PATH') if os.environ.get('DB_PATH') else '/tmp/db.json'
+    print(f"DB_PATH: {db_path}")
     if not os.path.exists(db_path):
-        shutil.copy('./db.json', '/tmp/db.json')
+        shutil.copy('./db.json', db_path)
+    elif os.path.exists(db_path) and os.path.getsize(db_path) == 0:
+        shutil.copy('./db.json', db_path)
 
     if 'httpMethod' not in event:
         # This might be an HTTP API event
