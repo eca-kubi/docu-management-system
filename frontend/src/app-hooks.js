@@ -1,7 +1,11 @@
 import useSWR, {mutate as globalMutate} from "swr";
 
-const fetcher = url => fetch(url).then((res) => res.json())
-
+const fetcher = url => fetch(url).then((res) => {
+    if (!res.ok) {
+        throw new Error(`An error occurred: ${res.status}`);
+    }
+    return res.json();
+});
 const useCategories = () => {
     const key = `${process.env.REACT_APP_API_URL}/categories`;
     const { data: categories, error, isLoading } = useSWR(key, fetcher);
