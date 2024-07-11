@@ -22,14 +22,16 @@ class S3CachedStorage(Storage):
                 self.s3.download_file(self.bucket, self.file, self.cache_path)
                 self.cache_timestamp = s3_timestamp
                 print(f"Downloaded {self.file} from S3")
-        except self.s3.exceptions.ClientError:
+        except self.s3.exceptions.ClientError as e:
             # File doesn't exist in S3, create an empty cache file
             with open(self.cache_path, 'w') as f:
                 json.dump({}, f)
             print(f"Created an empty cache file {self.cache_path}")
+            print(f"Error downloading {self.file} from S3: {e}")
 
     def read(self):
         with open(self.cache_path, 'r') as f:
+            self._load_cache()  # Ensure cache is up-to-date
             return json.load(f)
 
     def write(self, data):
