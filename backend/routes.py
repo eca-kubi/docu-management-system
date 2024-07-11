@@ -1,10 +1,14 @@
 import hashlib
 import os
 import random
+import string
 from datetime import datetime
+from io import BytesIO
 
+import boto3
 import requests
-from flask import Blueprint, send_file, jsonify, request
+from botocore.exceptions import ClientError
+from flask import Blueprint, send_file, jsonify, request, current_app
 from flask_cors import cross_origin
 from tinydb import Query
 from werkzeug.utils import secure_filename
@@ -14,10 +18,11 @@ from library.python.Database import Database
 from library.python.Document import Document as TrieDocument
 
 # Upload Path Configuration
-UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') if os.environ.get('UPLOAD_FOLDER') else './uploads'
-# Ensure the Directory Exists
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', './uploads')
 
+if not os.environ.get('USE_S3', 'false').lower() == 'true':
+    # Ensure the Directory Exists
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db = Database().get_db()
 
@@ -145,13 +150,13 @@ def upload_file():
                 }
 
                 # Save the file
-                file_name = f"{new_document['hashValue']}{new_document['fileExt']}"
-                # Reset the file stream position again before saving
-                file.stream.seek(0)  # Move the stream pointer back to the beginning
-                file.save(os.path.join(UPLOAD_FOLDER, file_name))  # Save with new file name
+                full_path = save_uploaded_document(file, new_document)
+                print(f"File saved to: {full_path}")
+                new_document['filePath'] = full_path
 
                 # insert the document into the database
                 documents_table.insert(new_document)
+
                 # insert the document into the trie
                 from app import trieUsersMap
                 trie_user = trieUsersMap.get(user_id)
@@ -172,7 +177,6 @@ def upload_file():
 
 @download_bp.route('/download/<file_id>', methods=['GET'])
 def download_file(file_id):
-
     Document = Query()
     documents_table = db.table('documents')
     document = documents_table.get(Document.id == file_id)
@@ -180,17 +184,44 @@ def download_file(file_id):
     if not document:
         return jsonify({'message': 'File not found'}), 404
 
-    file_path = os.path.join(UPLOAD_FOLDER, f"{document['hashValue']}{document['fileExt']}")
+    file_name = f"{document['hashValue']}{document['fileExt']}"
+    file_path = os.path.join(UPLOAD_FOLDER, file_name)
 
-    if not os.path.exists(file_path):
-        return jsonify({'message': 'File not found on server'}), 404
+    use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
 
-    return send_file(file_path, as_attachment=True, download_name=document['title'] + document['fileExt'])
+    if use_s3:
+        s3 = boto3.client('s3')
+        try:
+            file_obj = BytesIO()
+            s3.download_fileobj(
+                os.environ.get('S3_BUCKET_NAME'),
+                file_path,
+                file_obj
+            )
+            file_obj.seek(0)
+            return send_file(
+                file_obj,
+                as_attachment=True,
+                download_name=document['title'] + document['fileExt'],
+                mimetype=document.get('mimeType', 'application/octet-stream')
+            )
+        except ClientError as e:
+            current_app.logger.error(f"Error downloading file from S3: {e}")
+            return jsonify({'message': 'Error retrieving file from storage'}), 500
+    else:
+        if not os.path.exists(file_path):
+            return jsonify({'message': 'File not found on server'}), 404
+
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=document['title'] + document['fileExt'],
+            mimetype=document.get('mimeType', 'application/octet-stream')
+        )
 
 
 @delete_bp.route('/delete/<file_id>', methods=['DELETE'])
 def delete_file(file_id):
-
     Document = Query()
     documents_table = db.table('documents')
     document = documents_table.get(Document.id == file_id)
@@ -198,19 +229,45 @@ def delete_file(file_id):
     if not document:
         return jsonify({'message': 'File not found'}), 404
 
-    file_path = os.path.join(UPLOAD_FOLDER, f"{document['hashValue']}{document['fileExt']}")
+    file_name = f"{document['hashValue']}{document['fileExt']}"
+    file_path = os.path.join(UPLOAD_FOLDER, file_name)
 
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
 
+    if use_s3:
+        s3 = boto3.client('s3')
+        try:
+            s3.delete_object(
+                Bucket=os.environ.get('S3_BUCKET_NAME'),
+                Key=file_path
+            )
+        except ClientError as e:
+            current_app.logger.error(f"Error deleting file from S3: {e}")
+            return jsonify({'message': 'Error deleting file from storage'}), 500
+    else:
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except OSError as e:
+                current_app.logger.error(f"Error deleting local file: {e}")
+                return jsonify({'message': 'Error deleting file from local storage'}), 500
+
+    # Remove the document from the database
     documents_table.remove(Document.id == file_id)
 
-    # remove the document from the trie
+    # Remove the document from the trie
     from app import trieUsersMap
     trie_user = trieUsersMap.get(document['userId'])
-    trie_user.trie.remove(TrieDocument(document['id'], document['title'], document['hashValue'], document['fileExt']))
+    if trie_user:
+        trie_user.trie.remove(TrieDocument(document['id'], document['title'], document['hashValue'], document['fileExt']))
+    else:
+        current_app.logger.warning(f"Trie not found for user {document['userId']}")
 
     return jsonify({'message': 'File successfully deleted'}), 200
+
+
+def generate_random_content(size=1024):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=size)).encode()
 
 
 @add_dummy_documents_bp.route('/add_dummy_documents', methods=['POST'])
@@ -227,15 +284,46 @@ def add_dummy_documents():
     if not users.contains(Query().id == user_id):
         return jsonify({'error': 'User ID does not exist'}), 400
 
+    use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
+    s3 = boto3.client('s3') if use_s3 else None
+
     for _ in range(document_set_size):
         document = generate_random_document(user_id)
+        file_name = f"{document['hashValue']}{document['fileExt']}"
+        file_path = os.path.join(UPLOAD_FOLDER, file_name)
+
+        # Generate random content for the dummy file
+        file_content = generate_random_content()
+
+        if use_s3:
+            try:
+                s3.put_object(
+                    Bucket=os.environ.get('S3_BUCKET_NAME'),
+                    Key=file_path,
+                    Body=file_content
+                )
+            except ClientError as e:
+                current_app.logger.error(f"Error uploading dummy file to S3: {e}")
+                return jsonify({'error': 'Failed to create dummy files in S3'}), 500
+        else:
+            try:
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                with open(file_path, 'wb') as f:
+                    f.write(file_content)
+            except OSError as e:
+                current_app.logger.error(f"Error creating local dummy file: {e}")
+                return jsonify({'error': 'Failed to create local dummy files'}), 500
+
         documents.insert(document)
-        # Trie update logic exists
+
+        # Trie update logic
         from app import trieUsersMap
         trie_user = trieUsersMap.get(user_id)
-        document = TrieDocument(document['id'], document['title'], document['hashValue'],
-                                document['fileExt'])
-        trie_user.trie.insert(document)
+        if trie_user:
+            trie_document = TrieDocument(document['id'], document['title'], document['hashValue'], document['fileExt'])
+            trie_user.trie.insert(trie_document)
+        else:
+            current_app.logger.warning(f"Trie not found for user {user_id}")
 
     return jsonify({'message': f'{document_set_size} documents added for user {user_id}'}), 201
 
@@ -244,9 +332,10 @@ def add_dummy_documents():
 def generate_unique_title():
     title_length = random.randint(10, 50)
     words = []
+    random_word_api = os.environ.get('RANDOM_WORD_API', 'https://random-word.ryanrk.com/api/en/word/random/4')
 
     while len(' '.join(words)) < title_length:
-        response = requests.get('https://random-word-api.herokuapp.com/word?number=10')
+        response = requests.get(random_word_api)
         if response.status_code == 200:
             words.extend(response.json())
         else:
@@ -277,3 +366,30 @@ def generate_random_document(user_id):
     }
 
     return document
+
+
+def save_uploaded_document(file, new_document):
+    file_name = f"{new_document['hashValue']}{new_document['fileExt']}"
+    full_path = os.path.join(UPLOAD_FOLDER, file_name)
+
+    if os.environ.get('USE_S3', 'false').lower() == 'true':
+        s3 = boto3.client('s3')
+        try:
+            s3.upload_fileobj(
+                file,
+                os.environ.get('S3_BUCKET_NAME'),
+                full_path,
+                ExtraArgs={'ContentType': file.content_type}
+            )
+        except ClientError as e:
+            # Log the error and raise an exception or handle it as appropriate
+            print(f"Error uploading file to S3: {e}")
+            raise
+    else:
+        # Ensure the upload directory exists
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+        file.stream.seek(0)
+        file.save(full_path)
+
+    return full_path  # Return the path where the file was saved

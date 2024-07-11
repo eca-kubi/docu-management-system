@@ -3,6 +3,8 @@ import os
 import uuid
 
 from tinydb import TinyDB
+
+from library.python.S3CachedStorage import S3CachedStorage
 from library.python.Singleton import Singleton
 from library.python.UTF8JSONStorage import UTF8JSONStorage
 
@@ -40,8 +42,13 @@ def preprocess_data(data):
 
 class Database(metaclass=Singleton):
     def __init__(self):
-        self.db_path = os.environ.get('DB_PATH') if os.environ.get('DB_PATH') else './db.json'
-        self.db = TinyDB(self.db_path, storage=UTF8JSONStorage, sort_keys=True, indent=4, separators=(',', ': '))
+        storage = S3CachedStorage if os.environ.get('USE_S3') else UTF8JSONStorage
+        if os.environ.get('USE_S3'):
+            self.db = TinyDB(storage=storage, bucket_name=os.environ.get('S3_BUCKET_NAME'),
+                             file_name=os.environ.get('S3_FILE_NAME'))
+        else:
+            self.db_path = './db.json'
+            self.db = TinyDB(self.db_path, storage=storage, sort_keys=True, indent=4, separators=(',', ': '))
 
     def get_db(self):
         return self.db
