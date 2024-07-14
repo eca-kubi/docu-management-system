@@ -1,6 +1,8 @@
 import json
+import logging
 import os
 import boto3
+from botocore.exceptions import ClientError
 from tinydb.storages import Storage
 
 
@@ -37,6 +39,14 @@ class S3CachedStorage(Storage):
     def write(self, data):
         with open(self.cache_path, 'w') as f:
             json.dump(data, f)
+            f.flush()
+            os.fsync(f.fileno())
 
-        self.s3.upload_file(self.cache_path, self.bucket, self.file)
-        self.cache_timestamp = os.path.getmtime(self.cache_path)
+        # self._append_to_transaction_log(data)
+
+        try:
+            self.s3.upload_file(self.cache_path, self.bucket, self.file)
+            self.cache_timestamp = os.path.getmtime(self.cache_path)
+            # self._clear_transaction_log()
+        except ClientError as e:
+            logging.error(f"Failed to upload to S3: {e}")

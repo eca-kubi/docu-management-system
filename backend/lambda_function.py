@@ -61,22 +61,25 @@ def lambda_handler(event, context):
     #     shutil.copy('./db.json', db_path)
     # elif os.path.exists(db_path) and os.path.getsize(db_path) == 0:
     #     shutil.copy('./db.json', db_path)
+    try:
+        if 'httpMethod' not in event:
+            # This might be an HTTP API event
+            http_method = event['requestContext']['http']['method']
+            event['httpMethod'] = http_method
 
-    if 'httpMethod' not in event:
-        # This might be an HTTP API event
-        http_method = event['requestContext']['http']['method']
-        event['httpMethod'] = http_method
+            # If path is missing, add it
+            if 'path' not in event:
+                event['path'] = event['requestContext']['http']['path']
 
-        # If path is missing, add it
-        if 'path' not in event:
-            event['path'] = event['requestContext']['http']['path']
+            # Handle query string parameters
+            if 'queryStringParameters' not in event or event['queryStringParameters'] is None:
+                event['queryStringParameters'] = {}
 
-        # Handle query string parameters
-        if 'queryStringParameters' not in event or event['queryStringParameters'] is None:
-            event['queryStringParameters'] = {}
+            # Handle multi-value query string parameters (if needed)
+            if 'multiValueQueryStringParameters' not in event or event['multiValueQueryStringParameters'] is None:
+                event['multiValueQueryStringParameters'] = {}
 
-        # Handle multi-value query string parameters (if needed)
-        if 'multiValueQueryStringParameters' not in event or event['multiValueQueryStringParameters'] is None:
-            event['multiValueQueryStringParameters'] = {}
-
-    return response(app, event, context)
+        return response(app, event, context)
+    except Exception as e:
+        print(f"Error: {e}")
+        return response(app, event, context)

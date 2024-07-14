@@ -3,7 +3,6 @@ import os
 import random
 import string
 from datetime import datetime
-from io import BytesIO
 
 import boto3
 import requests
@@ -108,6 +107,7 @@ def upload_file():
         if file:
             filename = secure_filename(file.filename)
             file_extension = os.path.splitext(filename)[1]
+            mime_type = file.content_type  # Extract MIME type
 
             # Calculate the hash
             file_hash = compute_file_hash(file.stream)
@@ -146,7 +146,8 @@ def upload_file():
                     'fileType': file_extension,
                     'uploadDate': datetime.now().isoformat(),
                     'uploadDateReadable': datetime.now().strftime('%d-%b-%Y %H:%M'),
-                    'categories': new_categories
+                    'categories': new_categories,
+                    'mimeType': mime_type  # Include MIME type
                 }
 
                 # Save the file
@@ -177,47 +178,42 @@ def upload_file():
 
 @download_bp.route('/download/<file_id>', methods=['GET'])
 def download_file(file_id):
-    Document = Query()
-    documents_table = db.table('documents')
-    document = documents_table.get(Document.id == file_id)
+    try:
+        Document = Query()
+        documents_table = db.table('documents')
+        document = documents_table.get(Document.id == file_id)
 
-    if not document:
-        return jsonify({'message': 'File not found'}), 404
+        if not document:
+            return jsonify({'message': 'File not found'}), 404
 
-    file_name = f"{document['hashValue']}{document['fileExt']}"
-    file_path = os.path.join(UPLOAD_FOLDER, file_name)
+        file_name = f"{document['hashValue']}{document['fileExt']}"
+        file_path = os.path.join(UPLOAD_FOLDER, file_name)
 
-    use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
+        # Determine if S3 should be used based on USE_S3 environment variable
+        use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
 
-    if use_s3:
-        s3 = boto3.client('s3')
-        try:
-            file_obj = BytesIO()
-            s3.download_fileobj(
-                os.environ.get('S3_BUCKET_NAME'),
-                file_path,
-                file_obj
-            )
-            file_obj.seek(0)
-            return send_file(
-                file_obj,
-                as_attachment=True,
-                download_name=document['title'] + document['fileExt'],
-                mimetype=document.get('mimeType', 'application/octet-stream')
-            )
-        except ClientError as e:
-            current_app.logger.error(f"Error downloading file from S3: {e}")
-            return jsonify({'message': 'Error retrieving file from storage'}), 500
-    else:
-        if not os.path.exists(file_path):
-            return jsonify({'message': 'File not found on server'}), 404
-
-        return send_file(
-            file_path,
-            as_attachment=True,
-            download_name=document['title'] + document['fileExt'],
-            mimetype=document.get('mimeType', 'application/octet-stream')
-        )
+        if use_s3:
+            s3 = boto3.client('s3')
+            try:
+                # Generate a pre-signed URL for the file
+                presigned_url = s3.generate_presigned_url('get_object',
+                                                          Params={'Bucket': os.environ.get('S3_BUCKET_NAME'),
+                                                                  'Key': file_path},
+                                                          ExpiresIn=3600)  # URL expires in 1 hour
+                return jsonify({'url': presigned_url}), 200
+            except ClientError as e:
+                current_app.logger.error(f"Error generating pre-signed URL: {e}")
+                return jsonify({'message': 'Error generating file download link'}), 500
+        else:
+            if not os.path.exists(file_path):
+                return jsonify({'message': 'File not found on server'}), 404
+            return send_file(file_path,
+                             as_attachment=True,
+                             download_name=file_name,
+                             mimetype=document.get('mimeType', 'application/octet-stream')
+                             ), 200
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
 
 
 @delete_bp.route('/delete/<file_id>', methods=['DELETE'])
@@ -259,7 +255,8 @@ def delete_file(file_id):
     from app import trieUsersMap
     trie_user = trieUsersMap.get(document['userId'])
     if trie_user:
-        trie_user.trie.remove(TrieDocument(document['id'], document['title'], document['hashValue'], document['fileExt']))
+        trie_user.trie.remove(
+            TrieDocument(document['id'], document['title'], document['hashValue'], document['fileExt']))
     else:
         current_app.logger.warning(f"Trie not found for user {document['userId']}")
 
@@ -294,6 +291,8 @@ def add_dummy_documents():
 
         # Generate random content for the dummy file
         file_content = generate_random_content()
+
+        document['filePath'] = file_path
 
         if use_s3:
             try:
@@ -362,7 +361,8 @@ def generate_random_document(user_id):
         'fileType': '.txt',
         'uploadDate': datetime.utcnow().isoformat(),
         'uploadDateReadable': datetime.utcnow().strftime('%d-%b-%Y %H:%M'),
-        'categories': [random_category]
+        'categories': [random_category],
+        'mimeType': 'text/plain'
     }
 
     return document
@@ -374,6 +374,7 @@ def save_uploaded_document(file, new_document):
 
     if os.environ.get('USE_S3', 'false').lower() == 'true':
         s3 = boto3.client('s3')
+        file.stream.seek(0)  # Reset the stream position to the beginning
         try:
             s3.upload_fileobj(
                 file,
@@ -382,14 +383,12 @@ def save_uploaded_document(file, new_document):
                 ExtraArgs={'ContentType': file.content_type}
             )
         except ClientError as e:
-            # Log the error and raise an exception or handle it as appropriate
             print(f"Error uploading file to S3: {e}")
             raise
     else:
         # Ensure the upload directory exists
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
-
-        file.stream.seek(0)
+        file.stream.seek(0)  # Reset the stream position to the beginning
         file.save(full_path)
 
     return full_path  # Return the path where the file was saved
