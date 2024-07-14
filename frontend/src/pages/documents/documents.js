@@ -15,6 +15,16 @@ import {useCategories, useDocuments} from "../../app-hooks";
 import UploadDocumentForm from "../../components/upload-document-form/UploadDocumentForm";
 import axios from "axios";
 
+const downloadFileFromBlob = (blob, title, fileType) => {
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.setAttribute('download', title + fileType);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 const Documents = () => {
     const [gridItems, setGridItems] = useState([]);
     //const [selectedDocIds, setSelectedDocIds] = useState([]);
@@ -135,15 +145,15 @@ const Documents = () => {
         }
     }, [categories, mutateCategories, mutateDocuments]);
 
-/*    const handleDocumentSelection = useCallback((id, isDocSelected) => {
-        setSelectedDocIds((prevState) => {
-            if (isDocSelected) {
-                return [...prevState, id];
-            } else {
-                return prevState.filter((docId) => docId !== id);
-            }
-        });
-    }, [setSelectedDocIds]);*/
+    /*    const handleDocumentSelection = useCallback((id, isDocSelected) => {
+            setSelectedDocIds((prevState) => {
+                if (isDocSelected) {
+                    return [...prevState, id];
+                } else {
+                    return prevState.filter((docId) => docId !== id);
+                }
+            });
+        }, [setSelectedDocIds]);*/
 
     const handleSearchResults = useCallback((data) => {
         console.log('Search results:', data);
@@ -155,13 +165,24 @@ const Documents = () => {
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/download/${id}`, {
                 responseType: 'blob',
             });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', title + fileType); // Add file extension to title for download
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Handle the case where the response is json
+            if (response.headers['content-type'] === 'application/json') {
+                const reader = new FileReader();
+                reader.onload = async function () {
+                    console.log('Result: ' + reader.result);
+                    const jsonResponse = JSON.parse(reader.result + '');
+                    const url = jsonResponse?.url;
+                    if (url) {
+                        const response = await axios.get(url, {
+                            responseType: 'blob'
+                        });
+                        downloadFileFromBlob(new Blob([response.data]), title, fileType);
+                    }
+                };
+                reader.readAsText(response.data);
+            } else {
+                downloadFileFromBlob(new Blob([response.data]), title, fileType);
+            }
         } catch (error) {
             console.error('Error downloading the file', error);
         }
