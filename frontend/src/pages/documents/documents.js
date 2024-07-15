@@ -39,23 +39,40 @@ const Documents = () => {
     const [searchResults, setSearchResults] = useState([]);
     const {mutate: mutateCategories, categories} = useCategories();
     const {documents: swrDocuments, mutate: mutateDocuments} = useDocuments(user.id);
-    const [documents, setDocuments] = useState(swrDocuments);
-    const [allCategories, setAllCategories] = useState(categories || []);
+    //const [documents, setDocuments] = useState(swrDocuments);
+    //const [allCategories, setAllCategories] = useState(categories || []);
     const listRef = useRef();
 
 
-    useEffect(() => {
+/*    useEffect(() => {
         setDocuments(swrDocuments);
-    }, [swrDocuments]);
+    }, [swrDocuments]);*/
 
-    useEffect(() => {
+/*    useEffect(() => {
         setAllCategories(categories);
-    }, [categories]);
+    }, [categories]);*/
 
     const documentStore = useMemo(() => {
+        // Check if swrDocuments is loaded (i.e., not undefined)
+        if (!swrDocuments) {
+            // Optionally, handle the loading state or return a placeholder
+            return new ArrayStore({
+                data: [],
+                key: 'id',
+                onLoading: () => {
+                    setIsLoadPanelVisible(true);
+                },
+                onLoaded: () => {
+                    setIsLoadPanelVisible(false);
+                }
+            });
+        }
+
         const filteredDocuments = selectedCategories.length === 0
-            ? documents
-            : documents.filter(doc => selectedCategories.some(cat => doc.categories.includes(cat)));
+            ? swrDocuments
+            : swrDocuments.filter(doc =>
+                selectedCategories.some(cat => doc.categories.includes(cat))
+            );
 
         return new ArrayStore({
             data: filteredDocuments,
@@ -68,9 +85,10 @@ const Documents = () => {
                 setGridItems(filteredDocuments);
             }
         });
-    }, [documents, selectedCategories]);
+    }, [selectedCategories, swrDocuments]); // Include swrDocuments in the dependency array
 
     const itemDatasource = useMemo(() => {
+        // noinspection JSCheckFunctionSignatures
         return new DataSource({
             store: documentStore,
             key: 'id',
@@ -115,8 +133,8 @@ const Documents = () => {
     }, [searchResults]);
 
     const categoryDataSource = useMemo(() => {
-        return [...new Set([...selectedCategories, ..._.sortBy(allCategories)])]
-    }, [allCategories, selectedCategories]);
+        return categories ? [...new Set([...selectedCategories, ..._.sortBy(categories)])] : [];
+    }, [categories, selectedCategories]);
 
     const handleCategoryUpdate = useCallback(async (docId, category) => {
         try {
@@ -132,9 +150,9 @@ const Documents = () => {
             const categoryResponse = await post(`${process.env.REACT_APP_API_URL}/categories`, {categories: category});
             if (categoryResponse.isOk) {
                 console.log('Categories updated successfully.');
-                const newCategories = [...new Set([...category, ...categories])];
-                setAllCategories(newCategories);
-                await mutateCategories(newCategories);
+                //const newCategories = [...new Set([...category, ...categories])];
+                //setAllCategories(newCategories);
+                await mutateCategories();
             } else {
                 console.log('Failed to update categories.');
                 notify('Failed to update categories.', 'error', 3000);
@@ -256,7 +274,8 @@ const Documents = () => {
             if (response.status === 200) {
                 console.log('File uploaded successfully:', response.data);
 
-                setDocuments(prevDocuments => [...prevDocuments, response.data.document]);
+                //setDocuments(prevDocuments => [...prevDocuments, response.data.document]);
+                await mutateDocuments();
 
                 notify('Document uploaded successfully.', 'success', 3000);
                 return true;
@@ -273,7 +292,7 @@ const Documents = () => {
             notify('File upload has failed due to an error.', 'error', 3000);
             return false;
         }
-    }, [user.id, setDocuments]);
+    }, [user.id]);
 
     return (
         <div className="p-3 shadow rounded bg-secondary-subtle">
@@ -359,7 +378,7 @@ const Documents = () => {
             <div className='card-grid h-100' id="#cardGrid">
                 <FileCardGrid
                     items={gridItems}
-                    allCategories={allCategories}
+                    allCategories={categories || []}
                     onCategoryUpdate={handleCategoryUpdate}
                     //onCardSelected={handleDocumentSelection}
                     onItemDeleted={handleDelete}
