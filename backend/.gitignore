@@ -4,3 +4,6 @@
 uploads
 .aws-sam
 lambda-package
+/event.json
+/logs.txt
+/packaged.yaml
