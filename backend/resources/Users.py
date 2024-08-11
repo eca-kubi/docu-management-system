@@ -1,3 +1,4 @@
+import logging
 from flask import request
 from flask_restful import Resource
 from tinydb import Query
@@ -23,6 +24,8 @@ class Users(Resource):
         else:
             users_table = db.table('users')  # Specify the table
             users = users_table.all()  # Retrieve all records from the 'users' table
+            logger = logging.getLogger()
+            logger.info(f"Users: {users}")
             return users, 200
 
     @staticmethod

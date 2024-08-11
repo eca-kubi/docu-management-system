@@ -1,8 +1,9 @@
+import logging
+
 from flask import request
 from flask_restful import Resource
-from tinydb import Query
+
 from library.python.Database import Database
-from resources.User import User
 
 db = Database().get_db()
 
@@ -13,6 +14,8 @@ class Documents(Resource):
     def get():
         documents_table = db.table('documents')
         documents = documents_table.all()
+        logger = logging.getLogger()
+        logger.info(f"Documents: {documents}")
         return documents, 200
 
     @staticmethod
@@ -22,4 +25,3 @@ class Documents(Resource):
         documents_table = db.table('documents')
         documents_table.insert(new_document)
         return new_document, 201
-

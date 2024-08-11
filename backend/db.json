@@ -3,52 +3,54 @@
         "1": {
             "id": "1",
             "data": [
-                "Political",
-                "Review",
-                "Weekly Report",
-                "Personal",
-                "Daily Report",
-                "Religion and Faith",
-                "Legal",
-                "College",
-                "Culture",
-                "International",
-                "Urgent",
-                "Education",
-                "Important",
-                "Monthly Report",
-                "Miscellaneous",
-                "School",
-                "Classified",
-                "Pending Review",
-                "Draft",
-                "Equality",
-                "Work",
-                "Hackathon",
-                "Feedback Received",
-                "Finance",
-                "Confidential",
                 "Health",
+                "Pending Review",
+                "Work",
+                "Culture",
+                "Political",
+                "Equality",
+                "Legal",
+                "Miscellaneous",
                 "Hacking",
-                "Stationary",
+                "Hackathon",
+                "Music",
+                "Urgent",
+                "Intern",
+                "School",
+                "Daily Report",
+                "College",
+                "Education",
                 "Final",
+                "International",
+                "Review",
+                "Religion and Faith",
+                "Stationary",
+                "Finance",
                 "Completed",
+                "Important",
+                "Weekly Report",
+                "Design",
+                "Classified",
+                "Monthly Report",
+                "Confidential",
                 "Archive",
-                "Intern"
+                "Draft",
+                "Personal",
+                "Feedback Received"
             ]
         }
     },
     "users": {
         "1": {
             "id": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
-            "firstName": "Connor",
-            "lastName": "Stroman",
-            "name": "Connor Stroman",
-            "email": "Connor.Stroman@gmail.com",
+            "firstName": "Eric",
+            "lastName": "Clinton Appiah-Kubi",
+            "name": "Eric Clinton",
+            "email": "eric.clinton-appiahkubi@iubh.de",
             "avatar": "https://avatars.githubusercontent.com/u/20003936",
             "bio": "dreamer, geek, film lover",
-            "position": "Investor Operations Officer",
-            "prefix": "Miss"
+            "position": "Lead Applications Developer",
+            "prefix": "Mr"
         },
         "2": {
             "id": "f05da26a-3582-4157-9853-d825ef377d19",
@@ -71,6 +73,40 @@
             "bio": "blogger",
             "position": "Senior Identity Consultant",
             "prefix": "Ms."
+        }
+    },
+    "documents": {
+        "1": {
+            "id": "804bb2d8-7a37-4687-94d7-f93b10986bed",
+            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "author": "Eric Clinton",
+            "title": "Doc 01",
+            "hashValue": "e164c5724b46e8f6f1577a454773a3053b81aea3c1192a177d934254e87c975b",
+            "fileExt": ".docx",
+            "fileType": ".docx",
+            "uploadDate": "2024-08-07T06:12:03.244286",
+            "uploadDateReadable": "07-Aug-2024 06:12",
+            "categories": [
+                "Classified"
+            ],
+            "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "filePath": "./uploads\\e164c5724b46e8f6f1577a454773a3053b81aea3c1192a177d934254e87c975b.docx"
+        },
+        "2": {
+            "id": "13da667d-3da3-47d8-abb3-df93aefccf98",
+            "userId": "b537887c-55fa-451c-8c7a-eebc17e5e6a0",
+            "author": "Eric Clinton Appiah-Kubi",
+            "title": "Info Icon",
+            "hashValue": "fd4e0f3d6f896761d6c08e4bf0023b0134fe70a95bcebe022df4b08b1fddae13",
+            "fileExt": ".jpg",
+            "fileType": ".jpg",
+            "uploadDate": "2024-08-10T20:24:14.213915",
+            "uploadDateReadable": "10-Aug-2024 20:24",
+            "categories": [
+                "Design"
+            ],
+            "mimeType": "image/jpeg",
+            "filePath": "./uploads\\fd4e0f3d6f896761d6c08e4bf0023b0134fe70a95bcebe022df4b08b1fddae13.jpg"
         }
     }
 }

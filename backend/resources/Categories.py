@@ -1,3 +1,4 @@
+import logging
 from flask import request
 from flask_restful import Resource
 
@@ -12,6 +13,8 @@ class Categories(Resource):
         categories = db.table('categories').get(doc_id=1)
         if not categories:
             return {"error": "Categories not found"}, 404
+        logger = logging.getLogger()
+        logger.info(f"Categories: {categories['data']}")
         return categories['data'], 200
 
     @staticmethod

@@ -14,26 +14,34 @@ def initialize_trie_users():
     Initialize the TrieNodes for all users in the database
     :return: A dictionary mapping user IDs to their TrieNodes containing their documents
     """
-    # Fetch all users from the database
-    users = db.table('users').all()
+    try:
+        # Fetch all users from the database
+        users = db.table('users').all()
+    except Exception as e:
+        print(f"Error fetching users from the database: {e}")
+        return {}
 
     # Initialize an empty dictionary to store the mapping of users to their TrieNodes
     trie_users_map = {}
 
     # Iterate over each user
     for user in users:
-        # Create a new TrieNode for the user
-        trie_node = TrieNode(True)
+        try:
+            # Create a new TrieNode for the user
+            trie_node = TrieNode(True)
 
-        # Fetch all documents belonging to the current user
-        documents = db.table('documents').search(Query().userId == user['id'])
+            # Fetch all documents belonging to the current user
+            documents = db.table('documents').search(Query().userId == user['id'])
 
-        # Insert each document into the TrieNode
-        for document in documents:
-            trie_node.insert(Document(document['id'], document['title'], document['hashValue'], document['fileExt']))
+            # Insert each document into the TrieNode
+            for document in documents:
+                trie_node.insert(
+                    Document(document['id'], document['title'], document['hashValue'], document['fileExt']))
 
-        # Map the user to their TrieNode
-        trie_users_map[user['id']] = TrieUser(trie_node, user['id'])
+            # Map the user to their TrieNode
+            trie_users_map[user['id']] = TrieUser(trie_node, user['id'])
+        except Exception as e:
+            print(f"Error processing user {user['id']}: {e}")
 
     # Return the map of users to their TrieNodes
     return trie_users_map

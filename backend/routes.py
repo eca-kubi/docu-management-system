@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import os
 import random
 import string
@@ -12,14 +13,21 @@ from flask_cors import cross_origin
 from tinydb import Query
 from werkzeug.utils import secure_filename
 
-from helpers import compute_file_hash
+from helpers import compute_file_hash, initialize_trie_users
 from library.python.Database import Database
 from library.python.Document import Document as TrieDocument
 
 # Upload Path Configuration
 UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', './uploads')
+use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
+use_dynamodb = os.environ.get('USE_DYNAMODB', 'false').lower() == 'true'
 
-if not os.environ.get('USE_S3', 'false').lower() == 'true':
+# Initialize other global variables
+trieUsersMap = initialize_trie_users()
+
+logging.info(f"UPLOAD_FOLDER: {UPLOAD_FOLDER}")
+
+if not use_s3 and not use_dynamodb:
     # Ensure the Directory Exists
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -35,7 +43,7 @@ add_dummy_documents_bp = Blueprint('add_dummy_documents', __name__)
 
 @search_bp.route('/search', methods=['GET'])
 def search():
-    from app import trieUsersMap  # Lazy import
+    # from app import trieUsersMap  # Lazy import
 
     # Get the user id and document title from the query parameters
     user_id = request.args.get('user_id')
@@ -151,7 +159,10 @@ def upload_file():
                 }
 
                 # Save the file
-                full_path = save_uploaded_document(file, new_document)
+                if use_s3:
+                    full_path = upload_document_to_s3(file, new_document)
+                else:
+                    full_path = save_uploaded_document(file, new_document)
                 print(f"File saved to: {full_path}")
                 new_document['filePath'] = full_path
 
@@ -159,7 +170,7 @@ def upload_file():
                 documents_table.insert(new_document)
 
                 # insert the document into the trie
-                from app import trieUsersMap
+                # from app import trieUsersMap
                 trie_user = trieUsersMap.get(user_id)
                 document = TrieDocument(new_document['id'], new_document['title'], new_document['hashValue'],
                                         new_document['fileExt'])
@@ -188,9 +199,6 @@ def download_file(file_id):
 
         file_name = f"{document['hashValue']}{document['fileExt']}"
         file_path = os.path.join(UPLOAD_FOLDER, file_name)
-
-        # Determine if S3 should be used based on USE_S3 environment variable
-        use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
 
         if use_s3:
             s3 = boto3.client('s3')
@@ -228,8 +236,6 @@ def delete_file(file_id):
     file_name = f"{document['hashValue']}{document['fileExt']}"
     file_path = os.path.join(UPLOAD_FOLDER, file_name)
 
-    use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
-
     if use_s3:
         s3 = boto3.client('s3')
         try:
@@ -252,7 +258,7 @@ def delete_file(file_id):
     documents_table.remove(Document.id == file_id)
 
     # Remove the document from the trie
-    from app import trieUsersMap
+    # from app import trieUsersMap
     trie_user = trieUsersMap.get(document['userId'])
     if trie_user:
         trie_user.trie.remove(
@@ -281,7 +287,6 @@ def add_dummy_documents():
     if not users.contains(Query().id == user_id):
         return jsonify({'error': 'User ID does not exist'}), 400
 
-    use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
     s3 = boto3.client('s3') if use_s3 else None
 
     for _ in range(document_set_size):
@@ -316,7 +321,7 @@ def add_dummy_documents():
         documents.insert(document)
 
         # Trie update logic
-        from app import trieUsersMap
+        # from app import trieUsersMap
         trie_user = trieUsersMap.get(user_id)
         if trie_user:
             trie_document = TrieDocument(document['id'], document['title'], document['hashValue'], document['fileExt'])
@@ -390,5 +395,26 @@ def save_uploaded_document(file, new_document):
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
         file.stream.seek(0)  # Reset the stream position to the beginning
         file.save(full_path)
+
+    return full_path  # Return the path where the file was saved
+
+
+def upload_document_to_s3(file, new_document):
+    s3_bucket_name = os.environ.get('S3_BUCKET_NAME', 'dms-backend')
+    file_name = f"{new_document['hashValue']}{new_document['fileExt']}"
+    full_path = os.path.join(UPLOAD_FOLDER, file_name)
+
+    s3 = boto3.client('s3')
+    file.stream.seek(0)  # Reset the stream position to the beginning
+    try:
+        s3.upload_fileobj(
+            file,
+            s3_bucket_name,
+            full_path,
+            ExtraArgs={'ContentType': file.content_type}
+        )
+    except ClientError as e:
+        print(f"Error uploading file to S3: {e}")
+        raise
 
     return full_path  # Return the path where the file was saved

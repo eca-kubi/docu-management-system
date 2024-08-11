@@ -14,7 +14,8 @@ This project implements a sophisticated document management solution designed to
 - **Frontend**: JavaScript, HTML, CSS, ReactJS
 - **Framework**: NodeJS
 - **UI Components**: DevExtreme
-- **Database**: TinyDB
+- **Database**: TinyDB, DynamoDB (AWS)
+- **Cloud File Storage**: S3 (AWS)
 
 ## Local Deployment Guide
 
@@ -86,7 +87,7 @@ Access the following URLs from your web browser:
 
 Use the following credentials to log in:
 
-- Email: Connor.Stroman@gmail.com
+- Email: eric.clinton-appiahkubi@iubh.de
 - Password: [Any value]
 
 ## Contributing
@@ -99,6 +100,13 @@ We welcome contributions to improve the Document Management System. Please follo
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+## Testing the AWS Serverless Deployment
+
+A lambda serverless deployment of the Document Management System is available on AWS. To access the deployment, visit the following URL:
+[http://docu-management-system-254576844324.s3-website-us-east-1.amazonaws.com/](http://docu-management-system-254576844324.s3-website-us-east-1.amazonaws.com/)
+
+Use the same demo account credentials above to log in.
+
 ## Support
 
 If you encounter any issues or have questions, please file an issue on the GitHub repository.
@@ -110,3 +118,4 @@ If you encounter any issues or have questions, please file an issue on the GitHu
 - [ReactJS](https://reactjs.org/)
 - [DevExtreme](https://js.devexpress.com/)
 - [TinyDB](https://tinydb.readthedocs.io/)
+- [AWS](https://aws.amazon.com/)

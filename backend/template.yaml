@@ -1,0 +1,156 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: An AWS Serverless Application Model template describing your function.
+Resources:
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: ''
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: dms
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  DmsFrontend:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'docu-management-system-${AWS::AccountId}'
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      LoggingConfiguration:
+        DestinationBucketName: !Ref DmsFrontendLogs
+        LogFilePrefix: access-logs/
+
+  DmsFrontendLogs:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'docu-management-system-logs-${AWS::AccountId}'
+      LifecycleConfiguration:
+        Rules:
+          - Id: LogRetention
+            Status: Enabled
+            ExpirationInDays: 90
+
+  DmsFrontendLogsPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DmsFrontendLogs
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowLogging
+            Effect: Allow
+            Principal:
+              Service: 'logging.s3.amazonaws.com'
+            Action: 's3:PutObject'
+            Resource: !Sub 'arn:aws:s3:::docu-management-system-logs-${AWS::AccountId}/access-logs/*'
+
+  FlaskDmsApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: '.\lambda-package'
+      Description: 'Flask DMS Api'
+      MemorySize: 512
+      Timeout: 500
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
+      EventInvokeConfig:
+        MaximumEventAgeInSeconds: 21600
+        MaximumRetryAttempts: 2
+      PackageType: Zip
+      Environment:
+        Variables:
+          FRONTEND_URL: !GetAtt DmsFrontend.WebsiteURL
+          S3_BUCKET_NAME: dms-backend
+          S3_FILE_NAME: db.json
+          UPLOAD_FOLDER: uploads
+          USE_S3: 'True'
+          USE_DYNAMODB: 'True'
+          DYNAMODB_TABLE_NAME: dms
+      Policies:
+        - Statement:
+            - Sid: VisualEditor01
+              Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+              Resource: arn:aws:dynamodb:*:254576844324:table/S3CacheLocks
+            - Sid: VisualEditor01b
+              Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+              Resource: arn:aws:dynamodb:*:254576844324:table/dms
+            - Sid: VisualEditor02
+              Effect: Allow
+              Action:
+                - s3:GetBucketVersioning
+                - s3:PutBucketVersioning
+              Resource: arn:aws:s3:::dms-backend
+            - Sid: VisualEditor03
+              Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:GetObject
+                - s3:ListBucket
+                - s3:DeleteObject
+              Resource:
+                - arn:aws:s3:::dms-backend
+                - arn:aws:s3:::dms-backend*
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+              Resource: arn:aws:logs:us-east-1:254576844324:*
+            - Effect: Allow
+              Action:
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource:
+                - arn:aws:logs:us-east-1:254576844324:log-group:/aws/lambda/flask-dms-api:*
+      SnapStart:
+        ApplyOn: None
+      Events:
+        ApiRoutes:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /{proxy+}
+            Method: ANY
+        ApiGet:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /
+            Method: GET
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: Auto
+    Metadata:
+      SamResourceId: FlaskDmsApi
+
+Outputs:
+  DmsFrontendBucketName:
+    Description: Name of the DMS frontend bucket
+    Value: !Ref DmsFrontend
+
+  DmsWebsiteUrl:
+    Description: URL of the DMS frontend
+    Value: !GetAtt DmsFrontend.WebsiteURL

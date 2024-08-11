@@ -4,7 +4,7 @@ import uuid
 
 from tinydb import TinyDB
 
-from library.python.S3CachedStorage import S3CachedStorage
+from library.python.DynamoDbCachedStorage import DynamoDbCachedStorage
 from library.python.Singleton import Singleton
 from library.python.UTF8JSONStorage import UTF8JSONStorage
 
@@ -42,13 +42,27 @@ def preprocess_data(data):
 
 class Database(metaclass=Singleton):
     def __init__(self):
-        storage = S3CachedStorage if os.environ.get('USE_S3') else UTF8JSONStorage
-        if os.environ.get('USE_S3'):
-            self.db = TinyDB(storage=storage, bucket_name=os.environ.get('S3_BUCKET_NAME'),
-                             file_name=os.environ.get('S3_FILE_NAME'))
-        else:
-            self.db_path = './db.json'
-            self.db = TinyDB(self.db_path, storage=storage, sort_keys=True, indent=4, separators=(',', ': '))
+        # use_s3 = os.environ.get('USE_S3', 'false').lower() == 'true'
+        use_dynamodb = os.environ.get('USE_DYNAMODB', 'false').lower() == 'true'
+        dynamodb_table_name = os.environ.get('DYNAMODB_TABLE_NAME', 'dms')
+        try:
+            # if use_s3:
+            #     storage = S3CachedStorage
+            #     print("Using S3 storage")
+            #     self.db = TinyDB(storage=storage, bucket_name=os.environ.get('S3_BUCKET_NAME'),
+            #                      file_name=os.environ.get('S3_FILE_NAME'), lock_timeout=500, max_retries=10, base_delay=10)
+            #     print("TinyDb Database init completed successfully")
+            if use_dynamodb:
+                storage = DynamoDbCachedStorage
+                print("Using DynamoDb storage")
+                self.db = TinyDB(storage=storage, table_name=dynamodb_table_name)
+            else:
+                storage = UTF8JSONStorage
+                print("Using JSON storage")
+                self.db_path = './db.json'
+                self.db = TinyDB(self.db_path, storage=storage, sort_keys=True, indent=4, separators=(',', ': '))
+        except Exception as e:
+            print(f"Error initializing database: {e}")
 
     def get_db(self):
         return self.db

@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -18,7 +19,26 @@ from routes import upload_file_bp
 
 load_dotenv()  # take environment variables from .env.
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+
+def setup_logging():
+    # Remove any existing handlers
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
+
+    # Add a StreamHandler
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.info("Logging configured.")
+
+
 app = Flask(__name__)
+
+setup_logging()
 
 trieUsersMap = initialize_trie_users()
 
