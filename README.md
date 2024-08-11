@@ -90,6 +90,13 @@ Use the following credentials to log in:
 - Email: eric.clinton-appiahkubi@iubh.de
 - Password: [Any value]
 
+## Testing the AWS Serverless Deployment
+
+A lambda serverless deployment of the Document Management System is available on AWS. To access the deployment, visit the following URL:
+[http://docu-management-system-254576844324.s3-website-us-east-1.amazonaws.com/](http://docu-management-system-254576844324.s3-website-us-east-1.amazonaws.com/)
+
+Use the same demo account credentials above to log in.
+
 ## Contributing
 
 We welcome contributions to improve the Document Management System. Please follow these steps to contribute:
@@ -99,13 +106,6 @@ We welcome contributions to improve the Document Management System. Please follo
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
-## Testing the AWS Serverless Deployment
-
-A lambda serverless deployment of the Document Management System is available on AWS. To access the deployment, visit the following URL:
-[http://docu-management-system-254576844324.s3-website-us-east-1.amazonaws.com/](http://docu-management-system-254576844324.s3-website-us-east-1.amazonaws.com/)
-
-Use the same demo account credentials above to log in.
 
 ## Support
 
