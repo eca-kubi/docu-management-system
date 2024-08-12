@@ -1,7 +1,6 @@
 .env
 .venv
 .idea
-uploads
 .aws-sam
 lambda-package
 /event.json
